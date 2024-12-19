@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,6 +12,28 @@ export default defineConfig({
     vue(),
     vueJsx(),
     vueDevTools(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      workbox: {
+        cleanupOutdatedCaches: false,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}']
+      },
+      manifest: {
+        name: "Imon PRO",
+        short_name: "imp",
+        description: "CRM for Imon Sohtmon",
+        theme_color: "#D65C10",
+        background_color: "#fff",
+        display: "standalone",
+        icons: [
+          {
+            src: "/img/icons/android-chrome-192x192.png",
+            sizes: "192x192"
+          }
+        ]
+      }
+    })
   ],
   resolve: {
     alias: {

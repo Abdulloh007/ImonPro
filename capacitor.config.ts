@@ -1,0 +1,9 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'pro.imon.sohtmon',
+  appName: 'imon-pro',
+  webDir: 'dist'
+};
+
+export default config;

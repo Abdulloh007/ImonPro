@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">imon-pro</string>
+    <string name="title_activity_main">imon-pro</string>
+    <string name="package_name">pro.imon.sohtmon</string>
+    <string name="custom_url_scheme">pro.imon.sohtmon</string>
+</resources>
