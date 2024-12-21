@@ -24,7 +24,7 @@
   --ip-secondary: #79AB33;
   --ip-warn: #FAF2A0;
   --ip-info: #B2E3F8;
-  --ip-bg: rgb(214, 92, 16 / 60);
+  --ip-bg: rgba(214, 92, 16, 0.6);
 }
 
 /* semantic color variables for this project */
