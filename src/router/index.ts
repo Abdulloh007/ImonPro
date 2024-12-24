@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ProjectsView from '../views/ProjectsView.vue'
+import SingleProjectView from '../views/SingleProjectView.vue'
+import ProjectBlockView from '../views/ProjectBlockView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,6 +10,21 @@ const router = createRouter({
       path: '/',
       name: 'projects',
       component: ProjectsView,
+    },
+    {
+      path: '/project/:id',
+      name: 'single-project',
+      component: SingleProjectView,
+    },
+    {
+      path: '/project/:id/block/:block',
+      name: 'project-block',
+      component: ProjectBlockView,
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: 'ErrorView',
+      component: ProjectBlockView,
     },
     // {
     //   path: '/about',

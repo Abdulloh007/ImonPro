@@ -1,20 +1,20 @@
 <script setup lang="ts">
-    import { onMounted, ref } from 'vue';
-    import Navigation from '../components/Navigation.vue'
-    import ProjectList from '../components/ProjectList.vue'
-    import axios from 'axios';
+import { onMounted, ref } from 'vue';
+import Navigation from '../components/Navigation.vue'
+import ProjectList from '../components/ProjectList.vue'
+import axios from 'axios';
 import { useIndexStore } from '@/stores';
 
-    const projectsListRef = ref<any[]>([])
-    const store = useIndexStore()
+const projectsListRef = ref<any[]>([])
+const store = useIndexStore()
 
-    onMounted(() => {
-        axios.get('/api/projects', {
-            headers: {
-                'Authorization': 'Basic ' + btoa('Admin:A927592454r')
-            }
-        }).then(res => projectsListRef.value = res.data)
-    })
+onMounted(() => {
+    axios.get('/api/projects', {
+        headers: {
+            'Authorization': 'Basic ' + btoa('Admin:27863')
+        }
+    }).then(res => projectsListRef.value = res.data)
+})
 </script>
 
 <template lang="pug">
@@ -24,7 +24,7 @@ main.ip-main
             .left-slot
                 h2.title Проекты
                 .bread-crumbs
-                    span Все проекты
+                    RouterLink Все проекты
             .right-slot
                 RouterLink.ip-btn.ip-light-primary 
                     span Добавить
@@ -35,5 +35,15 @@ main.ip-main
 </template>
 
 <style scoped lang="scss">
+.header {
+    margin-bottom: 120px;
 
+    .title {
+        font-size: 32px;
+    }
+
+    .bread-crumbs {
+        font-size: 20px;
+    }
+}
 </style>

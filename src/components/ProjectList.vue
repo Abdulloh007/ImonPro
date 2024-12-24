@@ -1,7 +1,7 @@
 <template lang="pug">
 section.ip-projects
     .ip-container.ip-dfw
-        RouterLink.ip-project(v-for="item in list")
+        RouterLink.ip-project(v-for="item in list" :to="'/project/' + item.id")
             img(:src="'data:image;base64,' + item.logo")
             h4 {{ item.title }}
 </template>
@@ -24,11 +24,16 @@ section.ip-projects
         text-align: center;
         background-color: transparent;
         padding: 10px;
+
         &:hover {
-            background-color: var(--ip-bg);
+            background-color: rgb(187 187 187 / 60%);
+
+            img {
+                filter: grayscale(0);
+            }
 
             h4 {
-                color: #fff;
+                // color: #fff;
             }
         }
 
@@ -37,11 +42,14 @@ section.ip-projects
             width: 200px;
             height: 200px;
             object-fit: contain;
+            filter: grayscale(1);
+            transition: all .2s ease;
         }
 
         h4 {
             font-size: 24px;
             font-weight: 600;
+            color: black;
         }
     }
 }
