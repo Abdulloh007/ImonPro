@@ -38,8 +38,10 @@ main.ip-main
         .ip-container 
             .ip-table
                 .ip-t__row.ip-head
-                        .ip-t__data.ip-dfw(v-for="room in [1, 2, 3, 4, 5, 6, 7]") {{room}}
-
+                        .ip-t__data.ip-dfw(v-for="room in project.places?.title") {{room?.title}} 
+                        .ip-t__data.ip-dfw(v-for="room in project.places?.lux") {{room?.title}} 
+                        .ip-t__data.ip-dfw(v-for="room in project.places?.room") {{room?.title}} 
+                        .ip-t__data.ip-dfw(v-for="room in project.places?.underground") {{room?.title}} 
 
 </template>
 
