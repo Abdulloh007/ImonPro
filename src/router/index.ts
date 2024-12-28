@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ProjectsView from '../views/ProjectsView.vue'
 import SingleProjectView from '../views/SingleProjectView.vue'
 import ProjectBlockView from '../views/ProjectBlockView.vue'
+import RoomView from '../views/RoomView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,6 +26,11 @@ const router = createRouter({
       path: "/:pathMatch(.*)*",
       name: 'ErrorView',
       component: ProjectBlockView,
+    },
+    {
+      path: "/project/:project/block/:block/room/:id",
+      name: 'room',
+      component: RoomView,
     },
     // {
     //   path: '/about',

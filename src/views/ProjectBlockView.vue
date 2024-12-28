@@ -4,7 +4,8 @@ import { onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 
-    const project = ref([])
+
+    const project = ref<any>([])
     const route = useRoute()
 
     onMounted(() => {
@@ -12,9 +13,25 @@ import { useRoute } from 'vue-router';
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => project.value = res.data)
+    }).then(res => {
+        project.value = res.data
+        let roomsList = []
+        for(let i = res.data?.float_count; i > res.data?.magazine_count; i--) {
+            roomsList.push(res.data?.places?.room.filter((item: any) => item?.float == i))
+        }
+        
+        project.value.places.room = roomsList
+        console.log(project);
+        
+    })
 
     })
+
+function filterRoomsByFloat(arr: any[], float: number) {
+    if (arr) return arr.filter(item => item.float == float) 
+    else return []
+}
+
 </script>
 
 <template lang="pug">
@@ -36,13 +53,12 @@ main.ip-main
                     RouterLink(to="#") Блок {{ project.block }}
     section.ip-lux__rooms 
         .ip-container 
-            .ip-table
+            .ip-table(v-if="project")
                 .ip-t__row.ip-head
-                        .ip-t__data.ip-dfw(v-for="room in project.places?.title") {{room?.title}} 
-                        .ip-t__data.ip-dfw(v-for="room in project.places?.lux") {{room?.title}} 
-                        .ip-t__data.ip-dfw(v-for="room in project.places?.room") {{room?.title}} 
-                        .ip-t__data.ip-dfw(v-for="room in project.places?.underground") {{room?.title}} 
-
+                    .ip-t__data.ip-dfw(v-for="room in project.places?.title") {{room?.title}} 
+                .ip-t__row(v-for="(rooms, idx) in project.places?.room")
+                    .ip-t__data.ip-dfw {{ project.float_count - idx}}
+                    RouterLink.ip-t__data.room.ip-dfw(v-for="item in rooms" :to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + item.id") {{item.room_number}} кв 
 </template>
 
 <style scoped lang="scss">
@@ -85,6 +101,14 @@ main.ip-main
             align-items: center;
             background-color: #D9D9D9;
             
+            &.room {
+                cursor: pointer;
+                transition: all .2s ease;
+                &:hover {
+                    background-color: rgb(241 200 90 / 60%);
+                }
+            }
+
             &:first-child {
                 width: 50%;
             }
