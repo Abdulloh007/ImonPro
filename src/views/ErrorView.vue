@@ -1,5 +1,5 @@
 <script setup></script>
 
 <template lang="pug">
-h4 
+h 404 
 </template>

@@ -3,32 +3,35 @@ import { ref } from 'vue';
 import { onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
+import { UseLoaderStore } from '@/stores/loader';
 
 
-    const project = ref<any>([])
-    const route = useRoute()
+const project = ref<any>([])
+const route = useRoute()
+const loaderStore = UseLoaderStore()
 
-    onMounted(() => {
-        axios.get('/api/project/' + route.params.id + '/block/' + route.params.block, {
+onMounted(() => {
+    loaderStore.isActive = true
+    axios.get('/api/project/' + route.params.id + '/block/' + route.params.block, {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
     }).then(res => {
         project.value = res.data
         let roomsList = []
-        for(let i = res.data?.float_count; i > res.data?.magazine_count; i--) {
+        for (let i = res.data?.float_count; i > res.data?.magazine_count; i--) {
             roomsList.push(res.data?.places?.room.filter((item: any) => item?.float == i))
         }
-        
+
         project.value.places.room = roomsList
         console.log(project);
-        
-    })
 
-    })
+    }).finally(() => loaderStore.isActive = false)
+
+})
 
 function filterRoomsByFloat(arr: any[], float: number) {
-    if (arr) return arr.filter(item => item.float == float) 
+    if (arr) return arr.filter(item => item.float == float)
     else return []
 }
 
@@ -39,7 +42,7 @@ main.ip-main
     section.header
         .ip-container.ip-dfw
             .left-slot
-                RouterLink.ip-btn__back(to="/")
+                RouterLink.ip-btn__back(:to="'/project/' + project.id")
                     svg(width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M15 4.5L7 12.5L15 20.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
 
@@ -58,7 +61,10 @@ main.ip-main
                     .ip-t__data.ip-dfw(v-for="room in project.places?.title") {{room?.title}} 
                 .ip-t__row(v-for="(rooms, idx) in project.places?.room")
                     .ip-t__data.ip-dfw {{ project.float_count - idx}}
-                    RouterLink.ip-t__data.room.ip-dfw(v-for="item in rooms" :to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + item.id") {{item.room_number}} кв 
+                    RouterLink.ip-t__data.room.ip-dfw(v-for="item in rooms" :to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + item.id" :class="{reserved: item.reserved, broned: item.broned}") 
+                        span {{item.room_number}} кв
+                        span(v-if="item.broned") {{ item.client.split(' ')[0] }} {{ item.client.split(' ')[1].slice(0, 1) }}. {{ item.client.split(' ')[2].slice(0, 1) }}.
+                        span
 </template>
 
 <style scoped lang="scss">
@@ -90,20 +96,33 @@ main.ip-main
 .ip-table {
     display: flex;
     flex-direction: column;
+
     .ip-t__row {
         display: flex;
         flex-basis: 100px;
         margin-bottom: 5px;
+
         .ip-t__data {
             padding: 10px;
             width: 100%;
             justify-content: center;
             align-items: center;
             background-color: #D9D9D9;
-            
+
+            &.reserved {
+                background-color: #FAF2A0;
+                color: #000;
+            }
+
+            &.broned {
+                background-color: #79AB33;
+                color: #fff;
+            }
+
             &.room {
                 cursor: pointer;
                 transition: all .2s ease;
+
                 &:hover {
                     background-color: rgb(241 200 90 / 60%);
                 }
@@ -112,11 +131,10 @@ main.ip-main
             &:first-child {
                 width: 50%;
             }
-            
+
             &:not(:last-child) {
                 margin-right: 5px;
             }
         }
     }
-}
-</style>
+}</style>

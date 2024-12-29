@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
+import { UseLoaderStore } from '@/stores/loader';
 
 interface Project {
 
@@ -9,13 +10,15 @@ interface Project {
 
 const route = useRoute()
 const project = ref<any>({})
+const loaderStore = UseLoaderStore()
 
 onMounted(() => {
+    loaderStore.isActive = true
     axios.get('/api/project/' + route.params.id, {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => project.value = res.data)
+    }).then(res => project.value = res.data).finally(() => loaderStore.isActive = false)
 })
 </script>
 

@@ -32,9 +32,9 @@ section.ip-projects
                 filter: grayscale(0);
             }
 
-            h4 {
-                // color: #fff;
-            }
+            // h4 {
+            //     // color: #fff;
+            // }
         }
 
         img {

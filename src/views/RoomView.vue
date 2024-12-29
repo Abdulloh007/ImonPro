@@ -1,20 +1,51 @@
 <script setup lang="ts">
+import { UseLoaderStore } from '@/stores/loader';
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute()
-const room = ref<any>({})
-const room_square = ref<number>(0)
-const price = ref<number>(0)
-const installment = ref<number>(6)
-const exchange_rate = ref<number | string>(0)
-const first_payment = ref<number>(0)
-const monthly_sum = ref<number | string>(0)
-const total_sum = ref<number | string>(0)
-const isModalOpen = ref<string>('')
+interface Counterparty {
+    id: string | null;
+    name?: string
+    full_name: string;
+    address: string;
+    passport: string;
+    date_of_issue: string | Date;
+    place_of_issue: string;
+    phone?: string;
+}
+
+interface OrderDetails {
+
+}
+
+const route          = useRoute()
+const router         = useRouter()
+const loaderStore    = UseLoaderStore()
+const room           = ref<any>({})
+const room_square    = ref<number>(0)
+const price          = ref<number>(0)
+const installment    = ref<number>(6)
+const exchange_rate  = ref<number | string>(0)
+const first_payment  = ref<number>(0)
+const monthly_sum    = ref<number | string>(0)
+const total_sum      = ref<number | string>(0)
+const comment        = ref<string>('')
+const isModalOpen    = ref<string>('')
+
+const counterparty = ref<Counterparty>({
+full_name: '',
+address: '',
+passport: 'A',
+date_of_issue: '',
+place_of_issue: '',
+id: null
+})
+
+const OrderDetails = ref<OrderDetails>()
 
 onMounted(() => {
+    loaderStore.isActive = true
     axios.get('/api/room/' + route.params.id, {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
@@ -22,7 +53,7 @@ onMounted(() => {
     }).then(res => {
         room.value = res.data
         room_square.value = room.value.room_square
-    })
+    }).finally(() => loaderStore.isActive = false)
 })
 
 function calcSum() {
@@ -30,20 +61,54 @@ function calcSum() {
     total_sum.value = (room_square.value * price.value).toFixed(2)
 }
 
-function createCounterParty() {
-    axios.post('/api/counterparties', { test: 'sad' }, {
+function searchCounterParty() {
+    loaderStore.isActive = true
+    axios.get('/api/counterparty/' + counterparty.value.passport, {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => {})
+    }).then(res => {
+        counterparty.value = res.data
+        console.log(counterparty);
+        
+    }).finally(() => loaderStore.isActive = false)
 }
 
-function createOrder() {
-    axios.post('/api/counterparties', { test: 'sad' }, {
+function createCounterParty() {
+    loaderStore.isActive = true
+    return axios.post('/api/counterparties', counterparty.value, {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => {})
+    }).then(res => {
+        counterparty.value = res.data
+    }).finally(() => loaderStore.isActive = false)
+}
+
+async function createOrder() {
+    
+    if (counterparty.value.id === null) {
+        await createCounterParty()
+    }
+    loaderStore.isActive = true
+    axios.post('/api/orders', { 
+        id: null,
+        client: counterparty.value,
+        room: {...room.value, 
+            price: price.value, 
+            first_payment: first_payment.value, 
+            exchange_rate: exchange_rate.value, 
+            monthly_sum: monthly_sum.value,
+            total_sum: total_sum.value
+        },
+        comment: comment.value
+    }, {
+        headers: {
+            'Authorization': 'Basic ' + btoa('Admin:27863')
+        }
+    }).then(res => {
+        router.push('/project/' + route.params.project + '/block/' + route.params.block)
+    }).finally(() => loaderStore.isActive = false)
 }
 
 </script>
@@ -99,26 +164,30 @@ main.ip-main
                         input#total_sum(type="number" v-model="monthly_sum")
                 .ip-col-6
                     img(:src="'data:image;base64,' + room.block_plane")
-    
+
     .ip-modal(:class="isModalOpen")
-        .ip-modal__container
+        form.ip-modal__container(@submit.prevent="createOrder()" :ref="form")
             .ip-modal__header
                 h4 Новая продажа
                 svg(class="ip-modal__close" @click="isModalOpen = ''" width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg")
                     path(d="M1 22L22 1M22 22L1 1" stroke="#D65C10" stroke-opacity="0.61" stroke-width="2")
             .ip-modal__content.ip-dfw
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="ФИО")
+                    input(placeholder="ФИО" v-model="counterparty.full_name" required)
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="Серия Паспорта")
+                    input(placeholder="Серия Паспорта" v-model="counterparty.passport" maxlength="9" minlength="9" required @change="searchCounterParty")
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="Место выдачи паспорта")
+                    input(placeholder="Место выдачи паспорта" v-model="counterparty.place_of_issue" required)
                 .ip-inp.modal-inp.ip-dfw
-                    input(type="date" placeholder="Дата выдачи паспорта")
+                    input(type="date" placeholder="Дата выдачи паспорта" v-model="counterparty.date_of_issue" required)
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="Адрес")
+                    input(placeholder="Адрес" v-model="counterparty.address" required)
+                .ip-inp.modal-inp.ip-dfw
+                    input(placeholder="Телефон" v-model="counterparty.phone" maxlength="9")
+                .ip-inp.modal-inp.ip-dfw.w-full
+                    textarea(placeholder="Комментарий" col="1" rows="3" v-model="comment")
             .ip-modal__footer
-                button.ip-dfw.ip-btn 
+                button.ip-dfw.ip-btn(type="submit") 
                     span Продать
 
 </template> 
@@ -171,7 +240,8 @@ main.ip-main
     padding-left: 5%;
 }
 
-.ip-room__plan__descr h4, .ip-room__calc h4 {
+.ip-room__plan__descr h4,
+.ip-room__calc h4 {
     width: 100%;
     font-weight: 600;
     font-size: 24px;
@@ -186,7 +256,7 @@ main.ip-main
         margin-bottom: 15px;
         font-size: 18px;
 
-        &::after{
+        &::after {
             content: attr(symbol);
         }
 
@@ -205,7 +275,7 @@ main.ip-main
 
         }
     }
-}   
+}
 
 .ip-room .ip-container .ip-row:first-child {
     margin-bottom: 20px;

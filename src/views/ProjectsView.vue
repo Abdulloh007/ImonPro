@@ -4,16 +4,19 @@ import Navigation from '../components/Navigation.vue'
 import ProjectList from '../components/ProjectList.vue'
 import axios from 'axios';
 import { useIndexStore } from '@/stores';
+import { UseLoaderStore } from '@/stores/loader';
 
 const projectsListRef = ref<any[]>([])
 const store = useIndexStore()
+const loaderStore = UseLoaderStore()
 
 onMounted(() => {
+    loaderStore.isActive = true
     axios.get('/api/projects', {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => projectsListRef.value = res.data)
+    }).then(res => projectsListRef.value = res.data).finally(() => loaderStore.isActive = false)
 })
 </script>
 
