@@ -23,7 +23,7 @@ export default defineConfig({
         name: "Imon PRO",
         short_name: "imp",
         description: "CRM for Imon Sohtmon",
-        theme_color: "#D65C10",
+        theme_color: "#1E1E1E",
         background_color: "#fff",
         display: "standalone",
         icons: [
