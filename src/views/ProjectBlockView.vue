@@ -4,11 +4,13 @@ import { onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
+import { useToasterStore } from '@/stores/toaster';
 
 
 const project = ref<any>([])
 const route = useRoute()
 const loaderStore = UseLoaderStore()
+const toasterStore = useToasterStore()
 
 onMounted(() => {
     loaderStore.isActive = true
@@ -24,9 +26,13 @@ onMounted(() => {
         }
 
         project.value.places.room = roomsList
-        console.log(project);
-
-    }).finally(() => loaderStore.isActive = false)
+    })
+    .catch(err => toasterStore.add({
+        title: err.code,
+        descr: err.message,
+        type: 'danger'
+    }))
+    .finally(() => loaderStore.isActive = false)
 
 })
 

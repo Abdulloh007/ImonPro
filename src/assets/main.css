@@ -75,10 +75,15 @@ a {
   -o-transition: all 0.2s ease;
 }
 
+.ip-btn.ip-btn_info {
+  background-color: #4a83ce;
+  border-color: #4a83ce;
+}
+
 .ip-btn svg {
   fill: #fff;
 }
-
+/* ==========  Modal Styles ========== */
 .ip-modal {
   position: fixed;
   width: 100%;
@@ -189,6 +194,10 @@ a {
     background-color: #fff;
     color: var(--ip-bg);
   }
+  
+  .ip-btn.ip-btn_info:hover {
+    color: #4a83ce;
+  }
 }
 
 .ip-loader__wrap {
@@ -212,6 +221,7 @@ a {
   -o-transition: all .2s ease-in;
 }
 
+/* ========== Loader Styles ========== */
 .ip-loader__wrap.active {
   z-index: 100;
   opacity: 1;
@@ -226,7 +236,7 @@ a {
   transform: rotate(45deg);
 }
 .loader::before {
-  content: '';  
+  content: '';
   box-sizing: border-box;
   width: 24px;
   height: 24px;
@@ -234,9 +244,10 @@ a {
   left: 0;
   top: -24px;
   animation: animloader 4s ease infinite;
+  -webkit-animation: animloader 4s ease infinite;
 }
 .loader::after {
-  content: '';  
+  content: '';
   box-sizing: border-box;
   position: absolute;
   left: 0;
@@ -246,6 +257,7 @@ a {
   background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
   animation: animloader2 2s ease infinite;
+  -webkit-animation: animloader2 2s ease infinite;
 }
 
 @keyframes animloader {
@@ -281,21 +293,111 @@ a {
 @keyframes animloader2 {
   0% {
     transform: translate(0, 0) rotateX(0) rotateY(0);
-  }
+    -webkit-transform: translate(0, 0) rotateX(0) rotateY(0);
+    -moz-transform: translate(0, 0) rotateX(0) rotateY(0);
+    -ms-transform: translate(0, 0) rotateX(0) rotateY(0);
+    -o-transform: translate(0, 0) rotateX(0) rotateY(0);
+}
   25% {
     transform: translate(100%, 0) rotateX(0) rotateY(180deg);
-  }
+    -webkit-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
+    -moz-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
+    -ms-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
+    -o-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
+}
   50% {
     transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
-  }
+    -webkit-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
+    -moz-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
+    -ms-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
+    -o-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
+}
   75% {
     transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
-  }
+    -webkit-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
+    -moz-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
+    -ms-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
+    -o-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
+}
   100% {
     transform: translate(0, 0) rotateX(0) rotateY(360deg);
-  }
+    -webkit-transform: translate(0, 0) rotateX(0) rotateY(360deg);
+    -moz-transform: translate(0, 0) rotateX(0) rotateY(360deg);
+    -ms-transform: translate(0, 0) rotateX(0) rotateY(360deg);
+    -o-transform: translate(0, 0) rotateX(0) rotateY(360deg);
 }
-    
+}
+
+/* ========= Toaster Styles ========== */
+.ip-toaster {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  width: 300px;
+  z-index: 101;
+}
+
+.ip-toaster-enter-active,
+.ip-toaster-leave-active {
+  transition: all .5s ease;
+  -webkit-transition: all .5s ease;
+  -moz-transition: all .5s ease;
+  -ms-transition: all .5s ease;
+  -o-transition: all .5s ease;
+}
+
+.ip-toaster-enter-from,
+.ip-toaster-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+  -webkit-transform: translateX(30px);
+  -moz-transform: translateX(30px);
+  -ms-transform: translateX(30px);
+  -o-transform: translateX(30px);
+}
+
+.ip-toast {
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #eee;
+  cursor: pointer;
+  box-shadow: 0 2px 6px -2px rgb(0 0 0 / 33%);
+  margin-bottom: 15px;
+  /* transition: box-shadow 0.15s ease-out; */
+}
+
+.ip-toast.info {
+  background-color: #9bfff6;
+}
+
+.ip-toast.danger {
+  background-color: #f57373;
+}
+
+.ip-toast.warn {
+  background-color: #f5f373;
+}
+
+.ip-toast.success {
+  background-color: #67f567;
+}
+
+.ip-toast h4 {
+  margin: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ip-toast:hover {
+  box-shadow: 0 2px 10px -2px rgb(214 92 16 / 60%);
+}
+
+.ip-toast p {
+  font-size: 16px;
+  margin: 0;
+}
+
 /* 
 @media (min-width: 1024px) {
   body {

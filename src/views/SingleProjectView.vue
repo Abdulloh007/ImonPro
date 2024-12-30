@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
+import { useToasterStore } from '@/stores/toaster';
 
 interface Project {
 
@@ -11,6 +12,7 @@ interface Project {
 const route = useRoute()
 const project = ref<any>({})
 const loaderStore = UseLoaderStore()
+const toasterStore = useToasterStore()
 
 onMounted(() => {
     loaderStore.isActive = true
@@ -18,7 +20,13 @@ onMounted(() => {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => project.value = res.data).finally(() => loaderStore.isActive = false)
+    }).then(res => project.value = res.data)
+    .catch(err => toasterStore.add({
+        title: err.code,
+        descr: err.message,
+        type: 'danger'
+    }))
+    .finally(() => loaderStore.isActive = false)
 })
 </script>
 

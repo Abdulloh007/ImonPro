@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { UseLoaderStore } from '@/stores/loader';
+import { useToasterStore } from '@/stores/toaster';
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -19,27 +20,28 @@ interface OrderDetails {
 
 }
 
-const route          = useRoute()
-const router         = useRouter()
-const loaderStore    = UseLoaderStore()
-const room           = ref<any>({})
-const room_square    = ref<number>(0)
-const price          = ref<number>(0)
-const installment    = ref<number>(6)
-const exchange_rate  = ref<number | string>(0)
-const first_payment  = ref<number>(0)
-const monthly_sum    = ref<number | string>(0)
-const total_sum      = ref<number | string>(0)
-const comment        = ref<string>('')
-const isModalOpen    = ref<string>('')
+const route = useRoute()
+const router = useRouter()
+const loaderStore = UseLoaderStore()
+const toasterStore = useToasterStore()
+const room = ref<any>({})
+const room_square = ref<number>(0)
+const price = ref<number>(0)
+const installment = ref<number>(6)
+const exchange_rate = ref<number | string>(0)
+const first_payment = ref<number>(0)
+const monthly_sum = ref<number | string>(0)
+const total_sum = ref<number | string>(0)
+const comment = ref<string>('')
+const isModalOpen = ref<string>('')
 
 const counterparty = ref<Counterparty>({
-full_name: '',
-address: '',
-passport: 'A',
-date_of_issue: '',
-place_of_issue: '',
-id: null
+    full_name: '',
+    address: '',
+    passport: 'A',
+    date_of_issue: '',
+    place_of_issue: '',
+    id: null
 })
 
 const OrderDetails = ref<OrderDetails>()
@@ -50,10 +52,17 @@ onMounted(() => {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => {
-        room.value = res.data
-        room_square.value = room.value.room_square
-    }).finally(() => loaderStore.isActive = false)
+    })
+        .then(res => {
+            room.value = res.data
+            room_square.value = room.value.room_square
+        })
+        .catch(err => toasterStore.add({
+            title: err.code,
+            descr: err.message,
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
 })
 
 function calcSum() {
@@ -67,11 +76,18 @@ function searchCounterParty() {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => {
-        counterparty.value = res.data
-        console.log(counterparty);
-        
-    }).finally(() => loaderStore.isActive = false)
+    })
+        .then(res => {
+            counterparty.value = res.data
+            console.log(counterparty);
+
+        })
+        .catch(err => toasterStore.add({
+            title: err.code,
+            descr: err.message,
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
 }
 
 function createCounterParty() {
@@ -80,24 +96,31 @@ function createCounterParty() {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => {
-        counterparty.value = res.data
-    }).finally(() => loaderStore.isActive = false)
+    })
+        .then(res => {
+            counterparty.value = res.data
+        })
+        .catch(err => toasterStore.add({
+            title: err.code,
+            descr: err.message,
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
 }
 
 async function createOrder() {
-    
     if (counterparty.value.id === null) {
         await createCounterParty()
     }
     loaderStore.isActive = true
-    axios.post('/api/orders', { 
+    axios.post('/api/orders', {
         id: null,
         client: counterparty.value,
-        room: {...room.value, 
-            price: price.value, 
-            first_payment: first_payment.value, 
-            exchange_rate: exchange_rate.value, 
+        room: {
+            ...room.value,
+            price: price.value,
+            first_payment: first_payment.value,
+            exchange_rate: exchange_rate.value,
             monthly_sum: monthly_sum.value,
             total_sum: total_sum.value
         },
@@ -106,11 +129,23 @@ async function createOrder() {
         headers: {
             'Authorization': 'Basic ' + btoa('Admin:27863')
         }
-    }).then(res => {
-        router.push('/project/' + route.params.project + '/block/' + route.params.block)
-    }).finally(() => loaderStore.isActive = false)
+    })
+        .then(res => {
+            router.push('/project/' + route.params.project + '/block/' + route.params.block)
+        })
+        .catch(err => toasterStore.add({
+            title: err.code,
+            descr: err.message,
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
+
+
 }
 
+function printScreent() {
+    window.print()
+}
 </script>
 
 <template lang="pug">
@@ -130,7 +165,8 @@ main.ip-main
                     span >
                     RouterLink(:to="'/project/' + $route.params.project + '/block/' + $route.params.block") Блок {{ room.block }}
             .end-slot.ip-dfw
-                button.ip-btn(@click="isModalOpen = 'active'" type="button") Продать
+                button.ip-btn.ip-btn_info(@click="printScreent()" type="button" ) Печать
+                button.ip-btn(@click="isModalOpen = 'active'" type="button" ) Продать
     section.ip-room
         .ip-container.ip-dfw
             .ip-row
@@ -220,6 +256,10 @@ main.ip-main
     .end-slot {
         margin-left: auto;
         align-items: center;
+
+        & *:first-child {
+            margin-right: 15px;
+        }
     }
 }
 
@@ -231,7 +271,7 @@ main.ip-main
 
     img {
         width: 100%;
-        height: 50vh;
+        height: 45vh;
         object-fit: contain;
     }
 }
@@ -279,5 +319,11 @@ main.ip-main
 
 .ip-room .ip-container .ip-row:first-child {
     margin-bottom: 20px;
+}
+
+@media print {
+    .header {
+        display: none;
+    }
 }
 </style>
