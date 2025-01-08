@@ -277,7 +277,7 @@ main.ip-main
         margin-left: auto;
         align-items: center;
 
-        & *:first-child {
+        & *:not(:last-child) {
             margin-right: 15px;
         }
     }
