@@ -141,13 +141,30 @@ async function createOrder() {
             type: 'danger'
         }))
         .finally(() => loaderStore.isActive = false)
-
-
 }
 
 function printScreent() {
     window.print()
 }
+
+function rezerveRoom() {
+    loaderStore.isActive = true
+    axios.get(indexStore.apiHref + '/api/rezerve/' + route.params.id,{
+        headers: {
+            'Authorization': 'Basic ' + indexStore.token
+        }
+    })
+        .then(res => {
+            router.push('/project/' + route.params.project + '/block/' + route.params.block)
+        })
+        .catch(err => toasterStore.add({
+            title: err.code,
+            descr: err.message,
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
+}
+
 </script>
 
 <template lang="pug">
@@ -168,6 +185,7 @@ main.ip-main
                     RouterLink(:to="'/project/' + $route.params.project + '/block/' + $route.params.block") Блок {{ room.block }}
             .end-slot.ip-dfw
                 button.ip-btn.ip-btn_info(@click="printScreent()" type="button" ) Печать
+                button.ip-btn.ip-btn_warn(@click="rezerveRoom()" type="button" ) Резервировать
                 button.ip-btn(@click="isModalOpen = 'active'" type="button" ) Продать
     section.ip-room
         .ip-container.ip-dfw

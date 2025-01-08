@@ -80,6 +80,11 @@ a {
   border-color: #4a83ce;
 }
 
+.ip-btn.ip-btn_warn {
+  background-color: #cecc4a;
+  border-color: #cecc4a;
+}
+
 .ip-btn svg {
   fill: #fff;
 }
@@ -197,6 +202,10 @@ a {
   
   .ip-btn.ip-btn_info:hover {
     color: #4a83ce;
+  }
+  
+  .ip-btn.ip-btn_warn:hover {
+    color: #cecc4a;
   }
 }
 

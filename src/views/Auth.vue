@@ -24,9 +24,8 @@ function auth() {
         }
     }).then(res => {
         localStorage.setItem('ip_server', server.value)
-        // localStorage.setItem('ip_login', login.value)
-        // localStorage.setItem('ip_password', password.value)
         localStorage.setItem('ip_token', indexStore.UTF8TextToBase64(login.value + ':' + password.value))
+        localStorage.setItem('ip_role', res.data.role)
         router.push('/')
             .then(() => location.reload())
     })
