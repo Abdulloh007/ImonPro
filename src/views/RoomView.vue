@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useIndexStore } from '@/stores';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import axios from 'axios';
@@ -24,6 +25,7 @@ const route = useRoute()
 const router = useRouter()
 const loaderStore = UseLoaderStore()
 const toasterStore = useToasterStore()
+const indexStore = useIndexStore()
 const room = ref<any>({})
 const room_square = ref<number>(0)
 const price = ref<number>(0)
@@ -48,9 +50,9 @@ const OrderDetails = ref<OrderDetails>()
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get('/api/room/' + route.params.id, {
+    axios.get(indexStore.apiHref + '/api/room/' + route.params.id, {
         headers: {
-            'Authorization': 'Basic ' + btoa('Admin:27863')
+            'Authorization': 'Basic ' + indexStore.token
         }
     })
         .then(res => {
@@ -72,9 +74,9 @@ function calcSum() {
 
 function searchCounterParty() {
     loaderStore.isActive = true
-    axios.get('/api/counterparty/' + counterparty.value.passport, {
+    axios.get(indexStore.apiHref + '/api/counterparty/' + counterparty.value.passport, {
         headers: {
-            'Authorization': 'Basic ' + btoa('Admin:27863')
+            'Authorization': 'Basic ' + indexStore.token
         }
     })
         .then(res => {
@@ -92,9 +94,9 @@ function searchCounterParty() {
 
 function createCounterParty() {
     loaderStore.isActive = true
-    return axios.post('/api/counterparties', counterparty.value, {
+    return axios.post(indexStore.apiHref + '/api/counterparties', counterparty.value, {
         headers: {
-            'Authorization': 'Basic ' + btoa('Admin:27863')
+            'Authorization': 'Basic ' + indexStore.token
         }
     })
         .then(res => {
@@ -113,7 +115,7 @@ async function createOrder() {
         await createCounterParty()
     }
     loaderStore.isActive = true
-    axios.post('/api/orders', {
+    axios.post(indexStore.apiHref + '/api/orders', {
         id: null,
         client: counterparty.value,
         room: {
@@ -127,7 +129,7 @@ async function createOrder() {
         comment: comment.value
     }, {
         headers: {
-            'Authorization': 'Basic ' + btoa('Admin:27863')
+            'Authorization': 'Basic ' + indexStore.token
         }
     })
         .then(res => {

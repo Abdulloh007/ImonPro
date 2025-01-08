@@ -11,12 +11,13 @@ const projectsListRef = ref<any[]>([])
 const store = useIndexStore()
 const loaderStore = UseLoaderStore()
 const toasterStore = useToasterStore()
+const indexStore = useIndexStore()
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get('/api/projects', {
+    axios.get(indexStore.apiHref + '/api/projects', {
         headers: {
-            'Authorization': 'Basic ' + btoa('Admin:27863')
+            'Authorization': 'Basic ' + indexStore.token
         }
     }).then(res => projectsListRef.value = res.data)
     .catch(err => toasterStore.add({

@@ -5,18 +5,20 @@ import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
+import { useIndexStore } from '@/stores';
 
 
 const project = ref<any>([])
 const route = useRoute()
 const loaderStore = UseLoaderStore()
 const toasterStore = useToasterStore()
+const indexStore = useIndexStore()
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get('/api/project/' + route.params.id + '/block/' + route.params.block, {
+    axios.get(indexStore.apiHref + '/api/project/' + route.params.id + '/block/' + route.params.block, {
         headers: {
-            'Authorization': 'Basic ' + btoa('Admin:27863')
+            'Authorization': 'Basic ' + indexStore.token
         }
     }).then(res => {
         project.value = res.data

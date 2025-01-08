@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
+import { useIndexStore } from '@/stores';
 
 interface Project {
 
@@ -13,12 +14,13 @@ const route = useRoute()
 const project = ref<any>({})
 const loaderStore = UseLoaderStore()
 const toasterStore = useToasterStore()
+const indexStore = useIndexStore()
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get('/api/project/' + route.params.id, {
+    axios.get(indexStore.apiHref + '/api/project/' + route.params.id, {
         headers: {
-            'Authorization': 'Basic ' + btoa('Admin:27863')
+            'Authorization': 'Basic ' + indexStore.token
         }
     }).then(res => project.value = res.data)
     .catch(err => toasterStore.add({
