@@ -22,9 +22,9 @@ onMounted(() => {
         }
     }).then(res => {
         project.value = res.data
-        let roomsList = []
+        let roomsList: any[] = []
         for (let i = res.data?.float_count; i > res.data?.magazine_count; i--) {
-            roomsList.push(res.data?.places?.room.filter((item: any) => item?.float == i))
+            roomsList.push(res.data?.places?.room.filter((item: any) => item?.float == i).sort((a: any, b: any) => a.room_number < b.room_number ? -1 : 1))
         }
 
         project.value.places.room = roomsList
@@ -104,11 +104,14 @@ main.ip-main
 .ip-table {
     display: flex;
     flex-direction: column;
+    overflow-x: scroll;
+    max-width: 100%;
 
     .ip-t__row {
         display: flex;
         flex-basis: 100px;
         margin-bottom: 5px;
+        min-width: 1024px;
 
         .ip-t__data {
             padding: 10px;

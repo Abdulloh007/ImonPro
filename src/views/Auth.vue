@@ -25,7 +25,7 @@ function auth() {
     }).then(res => {
         localStorage.setItem('ip_server', server.value)
         localStorage.setItem('ip_token', indexStore.UTF8TextToBase64(login.value + ':' + password.value))
-        localStorage.setItem('ip_role', res.data.role)
+        localStorage.setItem('ip_role', JSON.stringify(res.data.role))
         router.push('/')
             .then(() => location.reload())
     })
@@ -43,6 +43,7 @@ main.ip-main
     section.ip-auth__section
         .ip-container
             form.ip-form.auth.ip-dfw(@submit.prevent="auth()")
+                img.ip-auth_logo(src="/img/logo.png")
                 .ip-inp.ip-dfw
                     input(placeholder="Сервер" v-model="server")
                 .ip-inp.ip-dfw
@@ -54,11 +55,18 @@ main.ip-main
 </template>
 
 <style lang="scss" scoped>
+.ip-auth_logo {
+    max-width: 100%;
+    width: 35%;
+    // margin-right: auto;
+    // margin-left: auto;
+    margin-bottom: 10vh;
+}
 .ip-form.auth{
     height: calc(100vh - 4rem);
     width: 45%;
     align-content: center;
-
+    justify-content: center;
     .ip-inp {
         width: 100%;
         margin-bottom: 15px;
@@ -97,5 +105,14 @@ main.ip-main
     width: 100vw;
     height: 100vh;
     pointer-events: none;
+}
+
+@media (max-width: 576px) {
+    .ip-form.auth {
+        width: 100%;
+    }
+    .ip-bg_auth {
+        display: none;
+    }
 }
 </style>

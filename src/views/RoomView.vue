@@ -57,7 +57,10 @@ onMounted(() => {
     })
         .then(res => {
             room.value = res.data
+            room.value.description = room.value.description.replaceAll("\u000B", "&nbsp;&nbsp;&nbsp;&nbsp;")
+            room.value.description = room.value.description.replaceAll("\r", "<br/>")
             room_square.value = room.value.room_square
+            room.value.client ? counterparty.value = room.value.client : ''
         })
         .catch(err => toasterStore.add({
             title: err.code,
@@ -133,7 +136,8 @@ async function createOrder() {
         }
     })
         .then(res => {
-            router.push('/project/' + route.params.project + '/block/' + route.params.block)
+            // router.push('/project/' + route.params.project + '/block/' + route.params.block)
+            location.reload()
         })
         .catch(err => toasterStore.add({
             title: err.code,
@@ -147,9 +151,28 @@ function printScreent() {
     window.print()
 }
 
+function printContract() {
+    loaderStore.isActive = true
+    axios.get(indexStore.apiHref + '/api/order-contract/' + room.value.client.order, {
+        headers: {
+            'Authorization': 'Basic ' + indexStore.token
+        }
+    })
+        .then(res => {
+            // router.push('/project/' + route.params.project + '/block/' + route.params.block)
+            // location.reload()
+        })
+        .catch(err => toasterStore.add({
+            title: err.code,
+            descr: err.message,
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
+}
+
 function rezerveRoom() {
     loaderStore.isActive = true
-    axios.get(indexStore.apiHref + '/api/rezerve/' + route.params.id,{
+    axios.get(indexStore.apiHref + '/api/rezerve/' + route.params.id, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
@@ -177,16 +200,19 @@ main.ip-main
                         path(d="M15 4.5L7 12.5L15 20.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
             .right-slot
                 h2.title "{{ room.project }}"
-                .bread-crumbs
+                .bread-crumbs.ip-dfw
                     RouterLink(to='/') Все проекты
                     span >
                     RouterLink(:to="'/project/' + $route.params.project") {{ room.project }}
                     span >
                     RouterLink(:to="'/project/' + $route.params.project + '/block/' + $route.params.block") Блок {{ room.block }}
+                    span >
+                    button.ip-btn.ip-btn_danger(@click="isModalOpen = 'active'" v-if="room.client")  {{ counterparty.name}}
             .end-slot.ip-dfw
                 button.ip-btn.ip-btn_info(@click="printScreent()" type="button" ) Печать
-                button.ip-btn.ip-btn_warn(@click="rezerveRoom()" type="button" ) Резервировать
-                button.ip-btn(@click="isModalOpen = 'active'" type="button" ) Продать
+                button.ip-btn.ip-btn_info(@click="printContract()" type="button" v-if="room.client") Печать Договора
+                //- button.ip-btn.ip-btn_warn(@click="rezerveRoom()" type="button" ) Резервировать
+                button.ip-btn(@click="isModalOpen = 'active'" type="button" v-if="!room.client") Продать
     section.ip-room
         .ip-container.ip-dfw
             .ip-row
@@ -194,7 +220,8 @@ main.ip-main
                     img(:src="'data:image;base64,' + room.room_plane")
                 .ip-col-6.ip-room__plan__descr
                     h4 {{ room.name }}
-            .ip-row
+                    p(v-html="room.description")
+            .ip-row.reverse
                 .ip-col-6.ip-room__calc.ip-dfw
                     h4 Общие сведения
                     .ip-inp.ip-dfw(symbol="m²" style="pointer-events: none;")
@@ -224,29 +251,29 @@ main.ip-main
     .ip-modal(:class="isModalOpen")
         form.ip-modal__container(@submit.prevent="createOrder()" :ref="form")
             .ip-modal__header
-                h4 Новая продажа
+                h4 {{room.client ? room.name: 'Новая продажа'}}
                 svg(class="ip-modal__close" @click="isModalOpen = ''" width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg")
                     path(d="M1 22L22 1M22 22L1 1" stroke="#D65C10" stroke-opacity="0.61" stroke-width="2")
             .ip-modal__content.ip-dfw
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="ФИО" v-model="counterparty.full_name" required)
+                    input(:disabled="room.client" placeholder="ФИО" v-model="counterparty.full_name" required)
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="Серия Паспорта" v-model="counterparty.passport" maxlength="9" minlength="9" required @change="searchCounterParty")
+                    input(:disabled="room.client" placeholder="Серия Паспорта" v-model="counterparty.passport" maxlength="9" minlength="9" required @change="searchCounterParty")
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="Место выдачи паспорта" v-model="counterparty.place_of_issue" required)
+                    input(:disabled="room.client" placeholder="Место выдачи паспорта" v-model="counterparty.place_of_issue" required)
                 .ip-inp.modal-inp.ip-dfw
-                    input(type="date" placeholder="Дата выдачи паспорта" v-model="counterparty.date_of_issue" required)
+                    input(:disabled="room.client" type="date" placeholder="Дата выдачи паспорта" v-model="counterparty.date_of_issue" required)
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="Адрес" v-model="counterparty.address" required)
+                    input(:disabled="room.client" placeholder="Адрес" v-model="counterparty.address" required)
                 .ip-inp.modal-inp.ip-dfw
-                    input(placeholder="Телефон" v-model="counterparty.phone" maxlength="9")
+                    input(:disabled="room.client" placeholder="Телефон" v-model="counterparty.phone" maxlength="9")
                 .ip-inp.modal-inp.ip-dfw.w-full
-                    textarea(placeholder="Комментарий" col="1" rows="3" v-model="comment")
+                    textarea(:disabled="room.client" placeholder="Комментарий" col="1" rows="3" v-model="comment")
             .ip-modal__footer
-                button.ip-dfw.ip-btn(type="submit") 
+                button.ip-dfw.ip-btn(type="submit" v-if="!room.client") 
                     span Продать
 
-</template> 
+</template>
 
 <style scoped lang="scss">
 .header {
@@ -344,6 +371,19 @@ main.ip-main
 @media print {
     .header {
         display: none;
+    }
+    body {
+        width: 1200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .ip-col-6 {
+        width: 100%;
+    }
+
+    .ip-row.reverse {
+        flex-direction: column-reverse;
     }
 }
 </style>

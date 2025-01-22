@@ -53,4 +53,12 @@ section.ip-projects
         }
     }
 }
+
+@media (max-width: 576px) {
+    .ip-projects {
+        .ip-project {
+            width: 100%;
+        }
+    }
+}
 </style>

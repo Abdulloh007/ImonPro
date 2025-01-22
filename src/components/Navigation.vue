@@ -36,4 +36,16 @@ section.ip-navigation
         padding-top: 15px;
         padding-bottom: 15px;
     }
+
+    @media (max-width: 576px) {
+        .ip-menu {
+            .ip-ip-m__item {
+                text-align: center;
+                svg {
+                    width: 42px;
+                    height: 42px;
+                }
+            }
+        }
+    }
 </style>
