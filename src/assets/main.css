@@ -429,3 +429,15 @@ a {
     padding: 0 2rem;
   }
 } */
+
+
+@media (max-width: 576px) {
+  #app {
+    padding: 1rem 0.5rem;
+  }
+
+  .ip-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

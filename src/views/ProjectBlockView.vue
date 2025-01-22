@@ -85,6 +85,9 @@ main.ip-main
 
     .bread-crumbs {
         font-size: 20px;
+        a {
+            word-break: break-all;
+        }
     }
 
     .ip-btn__back {
@@ -148,4 +151,11 @@ main.ip-main
             }
         }
     }
-}</style>
+}
+
+@media (max-width: 576px) {
+    .right-slot {
+        width: calc(100% - 45px);
+    }
+}
+</style>
