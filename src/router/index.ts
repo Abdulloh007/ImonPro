@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ProjectsView from '../views/ProjectsView.vue'
-import SingleProjectView from '../views/SingleProjectView.vue'
-import ProjectBlockView from '../views/ProjectBlockView.vue'
-import RoomView from '../views/RoomView.vue'
+import ProjectsView from '@/views/ProjectsView.vue'
+import SingleProjectView from '@/views/SingleProjectView.vue'
+import ProjectBlockView from '@/views/ProjectBlockView.vue'
+import RoomView from '@/views/RoomView.vue'
 import AuthVue from '@/views/Auth.vue'
 import SettingsView from '@/views/SettingsView.vue'
 
@@ -43,7 +43,7 @@ const router = createRouter({
     },
     {
       path: "/settings",
-      name: 'room',
+      name: 'settings',
       component: SettingsView,
     },
     // {
