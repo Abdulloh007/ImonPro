@@ -46,9 +46,15 @@ const counterparty = ref<Counterparty>({
     id: null
 })
 
+const role = ref<any>({
+    degree: 999,
+    name: ''
+})
+
 const OrderDetails = ref<OrderDetails>()
 
 onMounted(() => {
+    role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":999}')   
     loaderStore.isActive = true
     axios.get(indexStore.apiHref + '/api/room/' + route.params.id, {
         headers: {
@@ -212,7 +218,7 @@ main.ip-main
                 button.ip-btn.ip-btn_info(@click="printScreent()" type="button" ) Печать
                 button.ip-btn.ip-btn_info(@click="printContract()" type="button" v-if="room.client") Печать Договора
                 //- button.ip-btn.ip-btn_warn(@click="rezerveRoom()" type="button" ) Резервировать
-                button.ip-btn(@click="isModalOpen = 'active'" type="button" v-if="!room.client") Продать
+                button.ip-btn(@click="isModalOpen = 'active'" type="button" v-if="!room.client && role.degree < 3") Продать
     section.ip-room
         .ip-container.ip-dfw
             .ip-row
