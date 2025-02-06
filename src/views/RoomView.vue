@@ -217,7 +217,7 @@ main.ip-main
         .ip-container.ip-dfw
             .ip-row
                 .ip-col-6.ip-room__plan
-                    img(:src="'data:image;base64,' + room.room_plane")
+                    img(:src="room.room_plane !== null && room.room_plane !== undefined && room.room_plane !== '' ? 'data:image;base64,' + room.room_plane : ''")
                 .ip-col-6.ip-room__plan__descr
                     h4 {{ room.name }}
                     p(v-html="room.description")
@@ -246,7 +246,7 @@ main.ip-main
                         label(for="total_sum") Ежемесячная Оплата
                         input#total_sum(type="number" v-model="monthly_sum")
                 .ip-col-6
-                    img(:src="'data:image;base64,' + room.block_plane")
+                    img(:src="room.block_plane !== null && room.block_plane !== undefined && room.block_plane !== '' ? 'data:image;base64,' + room.block_plane : ''")
 
     .ip-modal(:class="isModalOpen")
         form.ip-modal__container(@submit.prevent="createOrder()" :ref="form")

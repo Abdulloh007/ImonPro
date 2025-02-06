@@ -40,7 +40,7 @@ onMounted(() => {
         sales.value = res.data
 
         sales.value.map(item => {
-            console.log(item);
+            // console.log(item);
 
             if (clients.value.indexOf(item.client) === -1) {
                 clients.value.push(item.client)
