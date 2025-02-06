@@ -107,18 +107,29 @@ main.ip-main
 .ip-table {
     display: flex;
     flex-direction: column;
-    overflow-x: scroll;
+    overflow: overlay;
     max-width: 100%;
+    max-height: 90vh;
+    padding-bottom: 10vh;
 
     .ip-t__row {
+        position: relative;
         display: flex;
         flex-basis: 100px;
         margin-bottom: 5px;
         min-width: 1024px;
 
+        &.ip-head {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 1px 6px -3px #000;
+        }
+
         .ip-t__data {
             padding: 10px;
             width: 100%;
+            min-height: 100px;
             justify-content: center;
             align-items: center;
             background-color: #D9D9D9;
@@ -144,6 +155,12 @@ main.ip-main
 
             &:first-child {
                 width: 50%;
+                position: sticky;
+                left: 0;
+                top: 0;
+                z-index: 9;
+                box-shadow: 1px 0 6px -3px #000;
+                justify-content: flex-start;
             }
 
             &:not(:last-child) {

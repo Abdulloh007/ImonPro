@@ -5,6 +5,7 @@ import ProjectBlockView from '@/views/ProjectBlockView.vue'
 import RoomView from '@/views/RoomView.vue'
 import AuthVue from '@/views/Auth.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import SalesViewVue from '@/views/SalesView.vue'
 
 const isAuthenticated = localStorage.getItem('ip_token') ? true : false;
 
@@ -45,6 +46,11 @@ const router = createRouter({
       path: "/settings",
       name: 'settings',
       component: SettingsView,
+    },
+    {
+      path: "/sales",
+      name: 'sales',
+      component: SalesViewVue,
     },
     // {
     //   path: '/about',

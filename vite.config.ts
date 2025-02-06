@@ -42,7 +42,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://10.158.190.10:8012/Main/hs',
+        target: 'http://10.158.190.10:8012/Panorama/hs',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, '')
       }
