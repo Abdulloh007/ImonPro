@@ -23,12 +23,12 @@ onMounted(() => {
             'Authorization': 'Basic ' + indexStore.token
         }
     }).then(res => project.value = res.data)
-    .catch(err => toasterStore.add({
-        title: err.code,
-        descr: err.message,
-        type: 'danger'
-    }))
-    .finally(() => loaderStore.isActive = false)
+        .catch(err => toasterStore.add({
+            title: err.code,
+            descr: err.message,
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
 })
 </script>
 
@@ -52,14 +52,14 @@ main.ip-main
         .ip-container.ip-dfw 
             .ip-draft 
                 RouterLink.ip-d__item( v-for="block of project.blocks" 
-                :style="{width: `${block.figure.width}px`, height: `${block.figure.height}px`}"
+                :style="{width: `${block.figure.width}px`, height: `${block.figure.height}px`, top: `${block.coords.lng}px`, left: `${block.coords.lat}px`}"
                 :to="'/project/' + project.id + '/block/' + block.id") {{ block.id }} 
 
 </template>
 
 <style scoped lang="scss">
 .header {
-    margin-bottom: 120px;
+    margin-bottom: 80px;
 
     .title {
         font-size: 32px;
@@ -84,13 +84,18 @@ main.ip-main
 }
 
 .ip-draft {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     width: 100%;
-    height: 100%;
+    height: 75vh;
+    overflow: overlay;
 }
 
 .ip-d__item {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100px;
     height: 100px;
     max-width: 100vw;

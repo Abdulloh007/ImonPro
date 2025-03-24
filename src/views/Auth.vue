@@ -49,7 +49,7 @@ main.ip-main
                 .ip-inp.ip-dfw
                     input(placeholder="Логин" v-model="login" required)
                 .ip-inp.ip-dfw
-                    input(placeholder="Пароль" v-model="password" required)
+                    input(placeholder="Пароль" type="password" v-model="password" required)
                 button.ip-btn(type="submit") Войти
     img.ip-bg_auth(src="/img/bg_auth.jpg")                
 </template>
