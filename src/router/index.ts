@@ -6,6 +6,8 @@ import RoomView from '@/views/RoomView.vue'
 import AuthVue from '@/views/Auth.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import SalesViewVue from '@/views/SalesView.vue'
+import ReportsVue from '@/views/Reports.vue'
+import NonSalesViewVue from '@/views/NonSalesView.vue'
 
 const isAuthenticated = localStorage.getItem('ip_token') ? true : false;
 
@@ -48,9 +50,19 @@ const router = createRouter({
       component: SettingsView,
     },
     {
-      path: "/sales",
+      path: "/reports",
+      name: 'reports',
+      component: ReportsVue,
+    },
+    {
+      path: "/reports/sales",
       name: 'sales',
       component: SalesViewVue,
+    },
+    {
+      path: "/reports/non-sales",
+      name: 'non-sales',
+      component: NonSalesViewVue,
     },
     // {
     //   path: '/about',
@@ -63,12 +75,12 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach(async (to, from) => {
-  if (!isAuthenticated && to.name !== 'auth') {
-    return { name: 'auth' }
-  } else if (isAuthenticated && to.name == 'auth') {
-    return { name: 'projects' }
-  }
-})
+// router.beforeEach(async (to, from) => {
+  // if (!isAuthenticated && to.name !== 'auth') {
+  //   return { name: 'auth' }
+  // } else if (isAuthenticated && to.name == 'auth') {
+    // return { name: 'projects' }
+  // }
+// })
 
 export default router

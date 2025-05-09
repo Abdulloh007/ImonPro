@@ -70,9 +70,9 @@ main.ip-main
                 .ip-t__row(v-for="(rooms, idx) in project.places?.room")
                     .ip-t__data.ip-dfw {{ project.float_count - idx}}
                     RouterLink.ip-t__data.room.ip-dfw(v-for="item in rooms" :to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + item.id" :class="{reserved: item.reserved, broned: item.broned}") 
-                        span {{item.room_number}} кв
-                        span(v-if="item.broned") {{ item.client.split(' ')[0] }} {{ item.client.split(' ')[1].slice(0, 1) }}. {{ item.client.split(' ')[2].slice(0, 1) }}.
-                        span
+                        span {{ item.room_number }} кв
+                        span(v-if="item.broned") {{ item.client.split(' ')[0] }} {{ item.client.split(' ').length > 1 ? item.client.split(' ')[1].slice(0, 1) : ''}}. {{ item.client.split(' ').length > 2 ? item.client.split(' ')[2].slice(0, 1) : '' }}.
+                        //- span
 </template>
 
 <style scoped lang="scss">
@@ -150,6 +150,12 @@ main.ip-main
 
                 &:hover {
                     background-color: rgb(241 200 90 / 60%);
+                }
+
+                span {
+                    display: block;
+                    width: 100%;
+                    text-align: center;
                 }
             }
 
