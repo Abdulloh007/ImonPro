@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import router from '@/router';
 import Navigation from '../components/Navigation.vue'
 
+router
 
 function exit() {
     localStorage.clear()
-    location.reload()
+    router.push('/').then(() => location.reload())
 }
 
 </script>

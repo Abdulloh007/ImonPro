@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import { useIndexStore } from '@/stores';
+import Navigation from '../components/Navigation.vue'
 
 interface Project {
 
@@ -54,7 +55,7 @@ main.ip-main
                 RouterLink.ip-d__item( v-for="block of project.blocks" 
                 :style="{width: `${block.figure.width}px`, height: `${block.figure.height}px`, top: `${block.coords.lng}px`, left: `${block.coords.lat}px`}"
                 :to="'/project/' + project.id + '/block/' + block.id") {{ block.id }} 
-
+    Navigation
 </template>
 
 <style scoped lang="scss">

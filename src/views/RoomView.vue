@@ -222,12 +222,12 @@ main.ip-main
     section.ip-room
         .ip-container.ip-dfw
             .ip-row
-                .ip-col-6.ip-room__plan
-                    img(:src="room.room_plane !== null && room.room_plane !== undefined && room.room_plane !== '' ? 'data:image;base64,' + room.room_plane : ''")
-                .ip-col-6.ip-room__plan__descr
+                .ip-col-12.ip-room__plan
                     h4 {{ room.name }}
-                    p(v-html="room.description")
-            .ip-row.reverse
+                    img(:src="room.room_plane !== null && room.room_plane !== undefined && room.room_plane !== '' ? 'data:image;base64,' + room.room_plane : ''")
+                //- .ip-col-6.ip-room__plan__descr
+                //-     p(v-html="room.description")
+            .ip-row
                 .ip-col-6.ip-room__calc.ip-dfw
                     h4 Общие сведения
                     .ip-inp.ip-dfw(symbol="m²" style="pointer-events: none;")
@@ -316,6 +316,10 @@ main.ip-main
     }
 }
 
+.ip-col-12 {
+    width: 100%;
+}
+
 .ip-col-6 {
     width: 50%;
 }
@@ -324,7 +328,7 @@ main.ip-main
 
     img {
         width: 100%;
-        height: 45vh;
+        height: 50vh;
         object-fit: contain;
     }
 }
@@ -333,7 +337,7 @@ main.ip-main
     padding-left: 5%;
 }
 
-.ip-room__plan__descr h4,
+.ip-room__plan h4,
 .ip-room__calc h4 {
     width: 100%;
     font-weight: 600;

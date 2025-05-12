@@ -11,7 +11,7 @@ import { Capacitor } from '@capacitor/core';
 
 const sales = ref<any[]>([])
 const filtered_sales = ref<any[]>([])
-const clients = ref<any[]>([])
+// const clients = ref<any[]>([])
 const blocks = ref<any[]>([])
 const projects = ref<any[]>([])
 
@@ -23,17 +23,17 @@ const totalRooms4 = ref<number>(0)
 
 const filters = ref<any>({
     id: "",
-    client: "",
-    client_phone: "",
+    // client: "",
+    // client_phone: "",
     room: "",
     room_count: 0,
     square: 0,
     float: 0,
     block: "",
     project: "",
-    date: 0,
-    monthly_payment: 0,
-    comment: ""
+    // date: 0,
+    // monthly_payment: 0,
+    // comment: ""
 })
 // const route = useRoute() 
 const loaderStore = UseLoaderStore()
@@ -43,7 +43,7 @@ const indexStore = useIndexStore()
 onMounted(() => {
     if (indexStore.apiHref && indexStore.apiHref !== '') {
         loaderStore.isActive = true
-        axios.get(indexStore.apiHref + '/api/sales', {
+        axios.get(indexStore.apiHref + '/api/non-sales', {
             headers: {
                 'Authorization': 'Basic ' + indexStore.token
             }
@@ -51,9 +51,9 @@ onMounted(() => {
             sales.value = res.data
 
             sales.value.map(item => {
-                if (clients.value.indexOf(item.client) === -1) {
-                    clients.value.push(item.client)
-                }
+                // if (clients.value.indexOf(item.client) === -1) {
+                //     clients.value.push(item.client)
+                // }
 
                 if (blocks.value.indexOf(item.block) === -1) {
                     blocks.value.push(item.block)
@@ -75,7 +75,7 @@ onMounted(() => {
     } else {
         indexStore.servers.map(item => {
             loaderStore.isActive = true
-            axios.get((Capacitor.isNativePlatform() ? item.link : '') + '/api/sales', {
+            axios.get((Capacitor.isNativePlatform() ? item.link : '') + '/api/non-sales', {
                 headers: {
                     'Authorization': 'Basic ' + item.token
                 }
@@ -83,9 +83,9 @@ onMounted(() => {
                 sales.value = res.data
 
                 sales.value.map(item => {
-                    if (clients.value.indexOf(item.client) === -1) {
-                        clients.value.push(item.client)
-                    }
+                    // if (clients.value.indexOf(item.client) === -1) {
+                    //     clients.value.push(item.client)
+                    // }
 
                     if (blocks.value.indexOf(item.block) === -1) {
                         blocks.value.push(item.block)
@@ -111,9 +111,9 @@ onMounted(() => {
 function filterSales() {
     let filtered = sales.value
 
-    if (filters.value.client !== "") {
-        filtered = filtered.filter(item => { return item.client === filters.value.client })
-    }
+    // if (filters.value.client !== "") {
+    //     filtered = filtered.filter(item => { return item.client === filters.value.client })
+    // }
 
     if (filters.value.block !== "") {
         filtered = filtered.filter(item => { return item.block === filters.value.block })
@@ -138,7 +138,7 @@ main.ip-main
     section.header
         .ip-container.ip-dfw.ip-justify-content-between.ip-align-items-center
             .left-slot
-                h2.title Продажи
+                h2.title Непроданные
                 .bread-crumbs
                     RouterLink(to="/reports") Все отчеты
             .right-slot 
@@ -152,38 +152,39 @@ main.ip-main
                     select(id="block" v-model="filters.block" @change="filterSales()")
                         option(value="") Все
                         option(v-for="block of blocks" :value="block") {{block}}
-                .ip-filter.client.ip-dfw
-                    label(for="client") Клиенты
-                    select(id="client" v-model="filters.client" @change="filterSales()")
-                        option(value="") Все
-                        option(v-for="client of clients" :value="client") {{client}}
+                //- .ip-filter.client.ip-dfw
+                //-     label(for="client") Клиенты
+                //-     select(id="client" v-model="filters.client" @change="filterSales()")
+                //-         option(value="") Все
+                //-         option(v-for="client of clients" :value="client") {{client}}
 
     section.ip-list
         .ip-container.ip-dfw
             .ip-table
                 .ip-t__row.ip-head
-                    .ip-t__data.ip-dfw ФИО
-                    .ip-t__data.ip-dfw Телефон
-                    .ip-t__data.ip-dfw №
-                    .ip-t__data.ip-dfw Комнат
-                    .ip-t__data.ip-dfw m2
-                    .ip-t__data.ip-dfw Этаж
+                    //- .ip-t__data.ip-dfw ФИО
+                    .ip-t__data.ip-dfw Проект
                     .ip-t__data.ip-dfw Блок
-                    .ip-t__data.ip-dfw Дата
-                    .ip-t__data.ip-dfw Сумма
-                    .ip-t__data.ip-dfw Заметка
+                    .ip-t__data.ip-dfw Этаж
+                    .ip-t__data.ip-dfw №
+                    .ip-t__data.ip-dfw m2
+                    .ip-t__data.ip-dfw Комнат
+                    //- .ip-t__data.ip-dfw Дата
+                    //- .ip-t__data.ip-dfw Сумма
+                    //- .ip-t__data.ip-dfw Заметка
                 .ip-t__row(v-for="sale in filtered_sales")
-                    .ip-t__data.ip-dfw {{sale.client}}
-                    .ip-t__data.ip-dfw {{sale.client_phone}}
-                    .ip-t__data.ip-dfw {{sale.room}}
-                    .ip-t__data.ip-dfw {{sale.room_count}}
-                    .ip-t__data.ip-dfw {{sale.square}}
-                    .ip-t__data.ip-dfw {{sale.float}}
+                    //- .ip-t__data.ip-dfw {{sale.client}}
+                    //- .ip-t__data.ip-dfw {{sale.client_phone}}
+                    .ip-t__data.ip-dfw {{sale.project}}
                     .ip-t__data.ip-dfw {{sale.block}}
-                    .ip-t__data.ip-dfw {{sale.date}}
-                    .ip-t__data.ip-dfw {{sale.monthly_payment}}
-                    .ip-t__data.ip-dfw {{sale.comment}}
-            
+                    .ip-t__data.ip-dfw {{sale.float}}
+                    .ip-t__data.ip-dfw {{sale.room}}
+                    .ip-t__data.ip-dfw {{sale.square}}
+                    .ip-t__data.ip-dfw {{sale.room_count}}
+                    //- .ip-t__data.ip-dfw {{sale.date}}
+                    //- .ip-t__data.ip-dfw {{sale.monthly_payment}}
+                    //- .ip-t__data.ip-dfw {{sale.comment}}
+                
             .ip-rooms_quantity
                 .ip-rooms_quantity__item
                     .ip-rooms_quantity__title Общая площадь
@@ -243,7 +244,6 @@ main.ip-main
     flex-direction: column;
     overflow: scroll;
     max-width: 100%;
-    padding-bottom: 20vh;
     max-height: 90vh;
 
     .ip-t__row {
@@ -258,6 +258,10 @@ main.ip-main
             top: 0;
             z-index: 10;
             box-shadow: 0 1px 6px -3px #000;
+        }
+        
+        &.ip-footer {
+            font-weight: 800;
         }
 
         &:nth-child(odd) {
