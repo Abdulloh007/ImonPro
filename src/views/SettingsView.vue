@@ -2,8 +2,6 @@
 import router from '@/router';
 import Navigation from '../components/Navigation.vue'
 
-router
-
 function exit() {
     localStorage.clear()
     router.push('/').then(() => location.reload())
@@ -19,22 +17,51 @@ main.ip-main
                 h2.title Настройки
                 .bread-crumbs
                     RouterLink Профиль
-            button.ip-btn.ip-btn_danger(@click="exit()") Выход
-
+            .right-slot.ip-dfw
+                button.ip-btn.ip-btn_danger(@click="exit()") Выход
+    .ip-settings
+        .ip-container.ip-dfw
+            ul.ip-settings
+                li.ip-settings__item
+                    RouterLink(to='/settings/servers') Серверы
+                //- li.ip-settings__item
+                //-     RouterLink(to='/settings/notifications') Уведомления
+                //- li.ip-settings__item
+                //-     RouterLink(to='/settings/faq') Часто задаваемые вопросы
+                li.ip-settings__item
+                    RouterLink(to='/settings/support') Поддержка
+    
     Navigation
 </template>
 
 <style scoped lang=scss>
+.ip-settings {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 15vh;
+    padding: 0;
 
-.header {
-    margin-bottom: 120px;
+    &__item {
+        padding: 1rem;
+        background-color: #E1E1E1;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        list-style-type: none;
+        margin-bottom: 1rem;
 
-    .title {
-        font-size: 32px;
-    }
+        & a {
+            display: block;
+        }
 
-    .bread-crumbs {
-        font-size: 20px;
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        &:hover {
+            background-color: #D1D1D1;
+        }
     }
 }
 </style>

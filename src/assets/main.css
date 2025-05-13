@@ -93,6 +93,81 @@ a {
 .ip-btn svg {
   fill: #fff;
 }
+
+/* ========== Global Styles ========== */
+
+.header {
+  margin-bottom: 120px;
+}
+
+.header .title {
+  font-size: 32px;
+}
+
+.header .bread-crumbs {
+  font-size: 20px;
+}
+
+.header .bread-crumbs a {
+  word-break: break-all;
+}
+
+.header .ip-btn__back {
+  display: flex;
+  height: 100%;
+  background-color: var(--ip-primary);
+  border-radius: 6px;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.header .ip-btn__back svg {
+  stroke: #fff;
+}
+
+.header .left-slot,
+.header .right-slot {
+  width: 50%;
+}
+
+.header .left-slot .ip-heading {
+  width: calc(100% - 45px);
+}
+
+.header .ip-filter {
+  align-items: center;
+}
+
+.header .ip-filter label {
+  display: block;
+  width: 80px;
+}
+
+.header .ip-filter select {
+  width: calc(100% - 80px);
+  padding: 10px;
+  border: none;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.header .right-slot {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.header .end-slot *:not(:last-child) {
+  margin-right: 15px;
+}
+
+.ip-col-12 {
+  width: 100%;
+}
+
+.ip-col-6 {
+  width: 50%;
+}
+
+
 /* ==========  Modal Styles ========== */
 .ip-modal {
   position: fixed;
@@ -165,13 +240,14 @@ a {
   width: 100%;
 }
 
-.ip-modal__content .ip-inp input, .ip-modal__content .ip-inp textarea{
+.ip-modal__content .ip-inp input,
+.ip-modal__content .ip-inp textarea {
   width: 100%;
   border: none;
   border-bottom: 1px solid #ccc;
   outline: none;
   font-size: 16px;
-} 
+}
 
 .ip-modal__content .ip-inp textarea {
   max-width: 100%;
@@ -196,7 +272,8 @@ a {
   a:hover {
     color: var(--ip-bg);
   }
-  a:hover svg path{
+
+  a:hover svg path {
     fill: var(--ip-bg);
   }
 
@@ -204,15 +281,15 @@ a {
     background-color: #fff;
     color: var(--ip-bg);
   }
-  
+
   .ip-btn.ip-btn_info:hover {
     color: #4a83ce;
   }
-  
+
   .ip-btn.ip-btn_warn:hover {
     color: #cecc4a;
   }
-  
+
   .ip-btn.ip-btn_danger:hover {
     color: #ce4a4a;
   }
@@ -253,6 +330,7 @@ a {
   position: relative;
   transform: rotate(45deg);
 }
+
 .loader::before {
   content: '';
   box-sizing: border-box;
@@ -264,6 +342,7 @@ a {
   animation: animloader 4s ease infinite;
   -webkit-animation: animloader 4s ease infinite;
 }
+
 .loader::after {
   content: '';
   box-sizing: border-box;
@@ -282,27 +361,35 @@ a {
   0% {
     box-shadow: 0 24px rgba(255, 255, 255, 0), 24px 24px rgba(255, 255, 255, 0), 24px 48px rgba(255, 255, 255, 0), 0px 48px rgba(255, 255, 255, 0);
   }
+
   12% {
     box-shadow: 0 24px white, 24px 24px rgba(255, 255, 255, 0), 24px 48px rgba(255, 255, 255, 0), 0px 48px rgba(255, 255, 255, 0);
   }
+
   25% {
     box-shadow: 0 24px white, 24px 24px white, 24px 48px rgba(255, 255, 255, 0), 0px 48px rgba(255, 255, 255, 0);
   }
+
   37% {
     box-shadow: 0 24px white, 24px 24px white, 24px 48px white, 0px 48px rgba(255, 255, 255, 0);
   }
+
   50% {
     box-shadow: 0 24px white, 24px 24px white, 24px 48px white, 0px 48px white;
   }
+
   62% {
     box-shadow: 0 24px rgba(255, 255, 255, 0), 24px 24px white, 24px 48px white, 0px 48px white;
   }
+
   75% {
     box-shadow: 0 24px rgba(255, 255, 255, 0), 24px 24px rgba(255, 255, 255, 0), 24px 48px white, 0px 48px white;
   }
+
   87% {
     box-shadow: 0 24px rgba(255, 255, 255, 0), 24px 24px rgba(255, 255, 255, 0), 24px 48px rgba(255, 255, 255, 0), 0px 48px white;
   }
+
   100% {
     box-shadow: 0 24px rgba(255, 255, 255, 0), 24px 24px rgba(255, 255, 255, 0), 24px 48px rgba(255, 255, 255, 0), 0px 48px rgba(255, 255, 255, 0);
   }
@@ -315,35 +402,39 @@ a {
     -moz-transform: translate(0, 0) rotateX(0) rotateY(0);
     -ms-transform: translate(0, 0) rotateX(0) rotateY(0);
     -o-transform: translate(0, 0) rotateX(0) rotateY(0);
-}
+  }
+
   25% {
     transform: translate(100%, 0) rotateX(0) rotateY(180deg);
     -webkit-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
     -moz-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
     -ms-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
     -o-transform: translate(100%, 0) rotateX(0) rotateY(180deg);
-}
+  }
+
   50% {
     transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
     -webkit-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
     -moz-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
     -ms-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
     -o-transform: translate(100%, 100%) rotateX(-180deg) rotateY(180deg);
-}
+  }
+
   75% {
     transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
     -webkit-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
     -moz-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
     -ms-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
     -o-transform: translate(0, 100%) rotateX(-180deg) rotateY(360deg);
-}
+  }
+
   100% {
     transform: translate(0, 0) rotateX(0) rotateY(360deg);
     -webkit-transform: translate(0, 0) rotateX(0) rotateY(360deg);
     -moz-transform: translate(0, 0) rotateX(0) rotateY(360deg);
     -ms-transform: translate(0, 0) rotateX(0) rotateY(360deg);
     -o-transform: translate(0, 0) rotateX(0) rotateY(360deg);
-}
+  }
 }
 
 /* ========= Toaster Styles ========== */
@@ -440,4 +531,23 @@ a {
     padding-left: 0;
     padding-right: 0;
   }
+
+  .ip-col-6 {
+    width: 100%;
+  }
+
+  .header {
+    margin-bottom: 60px;
+  }
+
+  .header .left-slot {
+    width: 100%;
+  }
+
+  .header .right-slot {
+    width: 100%;
+    margin-top: 20px;
+    justify-content: flex-start;
+  }
+
 }

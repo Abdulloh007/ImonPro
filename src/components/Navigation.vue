@@ -36,6 +36,10 @@ section.ip-navigation
         justify-content: space-evenly;
         padding-top: 15px;
         padding-bottom: 15px;
+        
+        .ip-ip-m__item {
+            text-align: center;
+        }
     }
 
     @media (max-width: 576px) {

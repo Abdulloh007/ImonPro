@@ -62,7 +62,12 @@ onMounted(() => {
                 if (projects.value.indexOf(item.project) === -1) {
                     projects.value.push(item.project)
                 }
+
             })
+
+            projects.value = projects.value.sort()
+            blocks.value = blocks.value.sort()
+            clients.value = clients.value.sort()
 
             filterSales()
         })
@@ -96,6 +101,10 @@ onMounted(() => {
                     }
                 })
 
+                projects.value = projects.value.sort()
+                blocks.value = blocks.value.sort()
+                clients.value = clients.value.sort()
+                
                 filterSales()
             })
                 .catch(err => toasterStore.add({
@@ -204,40 +213,6 @@ main.ip-main
 </template>
 
 <style scoped lang="scss">
-.header {
-    margin-bottom: 120px;
-
-    .title {
-        font-size: 32px;
-    }
-
-    .bread-crumbs {
-        font-size: 20px;
-    }
-
-    .left,
-    .right {
-        width: 50%;
-    }
-
-    .ip-filter {
-        align-items: center;
-
-        label {
-            display: block;
-            width: 80px;
-        }
-
-        select {
-            width: calc(100% - 80px);
-            padding: 10px;
-            border: none;
-            border-bottom: 1px solid #e1e1e1;
-        }
-    }
-}
-
-
 .ip-table {
     display: flex;
     flex-direction: column;
@@ -363,15 +338,6 @@ main.ip-main
 
     .header {
         margin-bottom: 20px;
-    }
-
-    .left-slot {
-        width: 100%;
-    }
-
-    .right-slot {
-        width: 100%;
-        margin-top: 20px;
     }
 
     .ip-table {

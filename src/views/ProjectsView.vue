@@ -57,8 +57,8 @@ main.ip-main
                 h2.title Проекты
                 .bread-crumbs
                     RouterLink Все проекты
-            .right-slot
-            button.ip-btn.ip-light-primary(@click="isModalOpen = 'active'" type="button")
+            .right-slot.ip-dfw
+                button.ip-btn.ip-light-primary(@click="isModalOpen = 'active'" type="button")
                     span Добавить
                     svg(width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M12 7V17M7 12L17 12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
@@ -83,22 +83,5 @@ main.ip-main
 </template>
 
 <style scoped lang="scss">
-.header {
-    margin-bottom: 120px;
 
-    .title {
-        font-size: 32px;
-    }
-
-    .bread-crumbs {
-        font-size: 20px;
-    }
-}
-
-@media (max-width: 576px) {
-    .header {
-        margin-bottom: 60px;
-    }
-    
-}
 </style>

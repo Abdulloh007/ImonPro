@@ -54,7 +54,7 @@ const role = ref<any>({
 const OrderDetails = ref<OrderDetails>()
 
 onMounted(() => {
-    role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":999}')   
+    role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":999}')
     loaderStore.isActive = true
     axios.get(indexStore.apiHref + '/api/room/' + route.params.id, {
         headers: {
@@ -194,31 +194,74 @@ function rezerveRoom() {
         .finally(() => loaderStore.isActive = false)
 }
 
+function checkFields() {
+    if (room_square.value === 0) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Площадь незаполнена или равна 0',
+            type: 'danger'
+        })
+        return false
+    }
+    if (price.value === 0) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Цена незаполнена или равна 0',
+            type: 'danger'
+        })
+        return false
+    }
+    if (installment.value === 0) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Рассрочка незаполнена или равна 0',
+            type: 'danger'
+        })
+        return false
+    }
+    if (exchange_rate.value === 0) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Курс незаполнен или равен 0',
+            type: 'danger'
+        })
+        return false
+    }
+    // if (first_payment.value === 0) {
+    //     toasterStore.add({
+    //         title: 'Ошибка',
+    //         descr: 'Первый взнос незаполнен или равен 0',
+    //         type: 'danger'
+    //     })
+    //     return false
+    // }
+    return true
+}
 </script>
 
 <template lang="pug">
 main.ip-main 
     section.header
         .ip-container.ip-dfw
-            .left-slot
+            .left-slot.ip-dfw
                 RouterLink.ip-btn__back(:to="'/project/' + $route.params.project + '/block/' + $route.params.block")
                     svg(width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M15 4.5L7 12.5L15 20.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
-            .right-slot
-                h2.title "{{ room.project }}"
-                .bread-crumbs.ip-dfw
-                    RouterLink(to='/') Все проекты
-                    span >
-                    RouterLink(:to="'/project/' + $route.params.project") {{ room.project }}
-                    span >
-                    RouterLink(:to="'/project/' + $route.params.project + '/block/' + $route.params.block") Блок {{ room.block }}
-                    span >
-                    button.ip-btn.ip-btn_danger(@click="isModalOpen = 'active'" v-if="room.client")  {{ counterparty.name}}
-            .end-slot.ip-dfw
+                .ip-heading
+                    h2.title "{{ room.project }}"
+                    .bread-crumbs.ip-dfw
+                        RouterLink(to='/') Все проекты
+                        span >
+                        RouterLink(:to="'/project/' + $route.params.project") {{ room.project }}
+                        span >
+                        RouterLink(:to="'/project/' + $route.params.project + '/block/' + $route.params.block") Блок {{ room.block }}
+                        span(v-if="room.client") >
+                        button.ip-btn.ip-btn_danger(@click="isModalOpen = 'active'" v-if="room.client")  {{ counterparty.name}}
+            .right-slot.ip-dfw
                 button.ip-btn.ip-btn_info(@click="printScreent()" type="button" ) Печать
                 button.ip-btn.ip-btn_info(@click="printContract()" type="button" v-if="room.client") Печать Договора
-                //- button.ip-btn.ip-btn_warn(@click="rezerveRoom()" type="button" ) Резервировать
-                button.ip-btn(@click="isModalOpen = 'active'" type="button" v-if="!room.client && role.degree < 3") Продать
+                button.ip-btn.ip-btn_warn(@click="rezerveRoom()" type="button" v-if="!room.client && role.degree < 3" ) Резервировать
+                button.ip-btn(@click="checkFields() ? isModalOpen = 'active' : ''" type="button" v-if="!room.client && role.degree < 3") Продать
     section.ip-room
         .ip-container.ip-dfw
             .ip-row
@@ -251,7 +294,7 @@ main.ip-main
                     .ip-inp.ip-dfw(symbol="$" style="pointer-events: none;")
                         label(for="total_sum") Ежемесячная Оплата
                         input#total_sum(type="number" v-model="monthly_sum")
-                .ip-col-6
+                .ip-col-6.ip-room__whole__plane
                     img(:src="room.block_plane !== null && room.block_plane !== undefined && room.block_plane !== '' ? 'data:image;base64,' + room.block_plane : ''")
 
     .ip-modal(:class="isModalOpen")
@@ -282,53 +325,28 @@ main.ip-main
 </template>
 
 <style scoped lang="scss">
-.header {
-    margin-bottom: 120px;
-
-    .title {
-        font-size: 32px;
-    }
-
-    .bread-crumbs {
-        font-size: 20px;
-    }
-
-    .ip-btn__back {
-        display: flex;
-        height: 100%;
-        background-color: var(--ip-primary);
-        border-radius: 6px;
-        align-items: center;
-        margin-right: 10px;
-
-        svg {
-            stroke: #fff;
-        }
-    }
-
-    .end-slot {
-        margin-left: auto;
-        align-items: center;
-
-        & *:not(:last-child) {
-            margin-right: 15px;
-        }
-    }
+.header .right-slot *:not(:last-child) {
+    margin-right: 15px;
 }
 
-.ip-col-12 {
-    width: 100%;
-}
-
-.ip-col-6 {
-    width: 50%;
-}
-
-.ip-room {
+.ip-room__plan {
 
     img {
         width: 100%;
-        height: 50vh;
+        height: 45vh;
+        object-fit: contain;
+    }
+}
+
+.ip-room__whole__plane {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40vh;
+
+    img {
+        width: 100%;
+        height: 100%;
         object-fit: contain;
     }
 }
@@ -382,18 +400,20 @@ main.ip-main
     .header {
         display: none;
     }
+
     body {
         width: 1200px;
     }
 }
 
 @media (max-width: 576px) {
-    .ip-col-6 {
-        width: 100%;
-    }
-
     .ip-row.reverse {
         flex-direction: column-reverse;
     }
+
+    .ip-room__calc {
+        margin-top: 20px;
+    }
+    
 }
 </style>

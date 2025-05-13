@@ -8,6 +8,7 @@ import SettingsView from '@/views/SettingsView.vue'
 import SalesViewVue from '@/views/SalesView.vue'
 import ReportsVue from '@/views/Reports.vue'
 import NonSalesViewVue from '@/views/NonSalesView.vue'
+import ServersView from '@/views/ServersView.vue'
 
 const isAuthenticated = localStorage.getItem('ip_token') ? true : false;
 
@@ -48,6 +49,11 @@ const router = createRouter({
       path: "/settings",
       name: 'settings',
       component: SettingsView,
+    },
+    {
+      path: "/settings/servers",
+      name: 'settings-servers',
+      component: ServersView,
     },
     {
       path: "/reports",

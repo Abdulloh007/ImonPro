@@ -49,19 +49,19 @@ function filterRoomsByFloat(arr: any[], float: number) {
 main.ip-main 
     section.header
         .ip-container.ip-dfw
-            .left-slot
+            .left-slot.ip-dfw
                 RouterLink.ip-btn__back(:to="'/project/' + project.id")
                     svg(width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M15 4.5L7 12.5L15 20.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
+                .ip-heading
+                    h2.title "{{ project.title }}"
+                    .bread-crumbs
+                        RouterLink(to='/') Все проекты
+                        span >
+                        RouterLink(:to="'/project/' + project.id") {{ project.id }}
+                        span >
+                        RouterLink(to="#") Блок {{ project.block }}
 
-            .right-slot
-                h2.title "{{ project.title }}"
-                .bread-crumbs
-                    RouterLink(to='/') Все проекты
-                    span >
-                    RouterLink(:to="'/project/' + project.id") {{ project.id }}
-                    span >
-                    RouterLink(to="#") Блок {{ project.block }}
     section.ip-lux__rooms 
         .ip-container 
             .ip-table(v-if="project")
@@ -76,42 +76,13 @@ main.ip-main
 </template>
 
 <style scoped lang="scss">
-.header {
-    margin-bottom: 120px;
-
-    .title {
-        font-size: 32px;
-    }
-
-    .bread-crumbs {
-        font-size: 20px;
-
-        a {
-            word-break: break-all;
-        }
-    }
-
-    .ip-btn__back {
-        display: flex;
-        height: 100%;
-        background-color: var(--ip-primary);
-        border-radius: 6px;
-        align-items: center;
-        margin-right: 10px;
-
-        svg {
-            stroke: #fff;
-        }
-    }
-}
-
 .ip-table {
     display: flex;
     flex-direction: column;
     overflow: overlay;
     max-width: 100%;
     max-height: 90vh;
-    padding-bottom: 10vh;
+    margin-bottom: 10vh;
 
     .ip-t__row {
         position: relative;
@@ -125,6 +96,13 @@ main.ip-main
             top: 0;
             z-index: 10;
             box-shadow: 0 1px 6px -3px #000;
+
+
+        }
+        a.ip-t__data {
+            line-break: anywhere;
+            background-color: #69cf4f;
+            color: #000;
         }
 
         .ip-t__data {
@@ -133,15 +111,16 @@ main.ip-main
             min-height: 100px;
             justify-content: center;
             align-items: center;
-            background-color: #D9D9D9;
+            background-color: #d9d9d9;
+
 
             &.reserved {
-                background-color: #FAF2A0;
+                background-color: #faed62;
                 color: #000;
             }
 
             &.broned {
-                background-color: #79AB33;
+                background-color: #cc6140;
                 color: #fff;
             }
 
@@ -150,7 +129,10 @@ main.ip-main
                 transition: all .2s ease;
 
                 &:hover {
-                    background-color: rgb(241 200 90 / 60%);
+                    // filter: brightness(0.95);
+                    transform: scale(1.05);
+                    box-shadow: 0 0 10px -3px #141414;
+                    z-index: 1;
                 }
 
                 span {
