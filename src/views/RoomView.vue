@@ -162,11 +162,23 @@ function printContract() {
     axios.get(indexStore.apiHref + '/api/order-contract/' + room.value.client.order, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
-        }
+        },
+        responseType: 'blob'
     })
         .then(res => {
-            // router.push('/project/' + route.params.project + '/block/' + route.params.block)
-            // location.reload()
+            
+            
+            const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.style.display = 'none'
+            a.download =   counterparty.value.full_name + '.docx'
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
         })
         .catch(err => toasterStore.add({
             title: err.code,

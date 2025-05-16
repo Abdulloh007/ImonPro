@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import ProjectsView from '@/views/ProjectsView.vue'
 import SingleProjectView from '@/views/SingleProjectView.vue'
 import ProjectBlockView from '@/views/ProjectBlockView.vue'
@@ -13,7 +13,7 @@ import ServersView from '@/views/ServersView.vue'
 const isAuthenticated = localStorage.getItem('ip_token') ? true : false;
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/auth',
