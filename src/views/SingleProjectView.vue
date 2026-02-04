@@ -7,10 +7,6 @@ import { useToasterStore } from '@/stores/toaster';
 import { useIndexStore } from '@/stores';
 import Navigation from '../components/Navigation.vue'
 
-interface Project {
-
-}
-
 const route = useRoute()
 const project = ref<any>({})
 const loaderStore = UseLoaderStore()
@@ -48,14 +44,12 @@ main.ip-main
                         span >
                         RouterLink(to='#') {{ project.id }}
 
-            .right-slot
-
     section.ip-blocks
         .ip-container.ip-dfw 
             .ip-draft 
                 RouterLink.ip-d__item( v-for="block of project.blocks" 
                 :style="{width: `${block.figure.width}px`, height: `${block.figure.height}px`, top: `${block.coords.lng}px`, left: `${block.coords.lat}px`}"
-                :to="'/project/' + project.id + '/block/' + block.id") {{ block.id }} 
+                :to="'/project/' + project.id + '/block/' + block.id") {{ block.id }}
     Navigation
 </template>
 

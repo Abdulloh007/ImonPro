@@ -41,11 +41,11 @@ const toasterStore = useToasterStore()
 const indexStore = useIndexStore()
 
 onMounted(() => {
-    if (indexStore.apiHref && indexStore.apiHref !== '') {
+    indexStore.servers.map(item => {
         loaderStore.isActive = true
-        axios.get(indexStore.apiHref + '/api/non-sales', {
+        axios.get(item.link + '/api/non-sales', {
             headers: {
-                'Authorization': 'Basic ' + indexStore.token
+                'Authorization': 'Basic ' + item.token
             }
         }).then(res => {
             sales.value = res.data
@@ -62,7 +62,6 @@ onMounted(() => {
                 if (projects.value.indexOf(item.project) === -1) {
                     projects.value.push(item.project)
                 }
-
             })
 
             projects.value = projects.value.sort()
@@ -76,43 +75,7 @@ onMounted(() => {
                 type: 'danger'
             }))
             .finally(() => loaderStore.isActive = false)
-    } else {
-        indexStore.servers.map(item => {
-            loaderStore.isActive = true
-            axios.get((Capacitor.isNativePlatform() ? item.link : '') + '/api/non-sales', {
-                headers: {
-                    'Authorization': 'Basic ' + item.token
-                }
-            }).then(res => {
-                sales.value = res.data
-
-                sales.value.map(item => {
-                    // if (clients.value.indexOf(item.client) === -1) {
-                    //     clients.value.push(item.client)
-                    // }
-
-                    if (blocks.value.indexOf(item.block) === -1) {
-                        blocks.value.push(item.block)
-                    }
-
-                    if (projects.value.indexOf(item.project) === -1) {
-                        projects.value.push(item.project)
-                    }
-                })
-
-                projects.value = projects.value.sort()
-                blocks.value = blocks.value.sort()
-
-                filterSales()
-            })
-                .catch(err => toasterStore.add({
-                    title: err.code,
-                    descr: err.message,
-                    type: 'danger'
-                }))
-                .finally(() => loaderStore.isActive = false)
-        })
-    }
+    })
 })
 
 function filterSales() {

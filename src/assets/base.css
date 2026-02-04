@@ -94,3 +94,7 @@ body {
 a, input, button {
   cursor: pointer;
 }
+
+b {
+  font-weight: bolder;
+}
