@@ -3,6 +3,7 @@ import ProjectsView from '@/views/ProjectsView.vue'
 import SingleProjectView from '@/views/SingleProjectView.vue'
 import ProjectBlockView from '@/views/ProjectBlockView.vue'
 import RoomView from '@/views/RoomView.vue'
+import ParkingView from '@/views/ParkingView.vue'
 import AuthVue from '@/views/Auth.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import SalesViewVue from '@/views/SalesView.vue'
@@ -44,6 +45,11 @@ const router = createRouter({
       path: "/project/:project/block/:block/room/:id",
       name: 'room',
       component: RoomView,
+    },
+    {
+      path: "/project/:project/block/:block/parking/:id",
+      name: 'parking',
+      component: ParkingView,
     },
     {
       path: "/settings",

@@ -154,7 +154,7 @@ function createCounterParty() {
             counterparty.value = res.data
             
             sms_form.value.phone = counterparty.value.phone || ''
-            sms_form.value.message = `Уважаемый(ая) ${ counterparty.value.full_name }, Ваш заказ на квартиру ${ room.value.name } в проекте ${ room.value.project } успешно оформлен. С уважением, Toj Fayz.` 
+            sms_form.value.message = `Уважаемый(ая) ${ counterparty.value.full_name }, Ваш заказ на квартиру ${ room.value.name } в проекте ${ room.value.project } успешно оформлен. С уважением, IMON GROUP.` 
 
             room.value.client = counterparty.value
         })
@@ -326,7 +326,7 @@ function checkFieldsPayment() {
 
 function getPaymentsPlan() {
     loaderStore.isActive = true
-    axios.get(indexStore.apiHref + '/api/payments/' + room.value?.client?.order, {
+    axios.post(indexStore.apiHref + '/api/payments/' + room.value?.client?.order, {id: room.value?.client?.order, date: room.value?.client?.order_date} , {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }

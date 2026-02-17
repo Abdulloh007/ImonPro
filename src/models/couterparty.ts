@@ -10,4 +10,5 @@ export interface Counterparty {
     phone?: string;
     another_phone?: boolean;
     order?: string | null;
+    order_date?: string | null;
 }
