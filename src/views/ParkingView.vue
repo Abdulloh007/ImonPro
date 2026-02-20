@@ -4,7 +4,7 @@ import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import { Capacitor } from '@capacitor/core';
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
@@ -24,6 +24,43 @@ const modalParking = ref<any>(null)
 const modalCoordinates = ref({ x: 0, y: 0 })
 const dragStartMouse = ref({ x: 0, y: 0 })
 const dragStartPositions = ref<Map<number, { x: number; y: number }>>(new Map())
+const undoStack = ref<any[]>([])
+const redoStack = ref<any[]>([])
+const MAX_HISTORY = 100
+
+const pushHistory = () => {
+    const snapshot = parkings.value.map((p: any) => ({ id: p.id, x: p.x, y: p.y }))
+    undoStack.value.push(JSON.parse(JSON.stringify(snapshot)))
+    if (undoStack.value.length > MAX_HISTORY) undoStack.value.shift()
+    // Clearing redo on new action
+    redoStack.value = []
+}
+
+const applySnapshot = (snapshot: any[]) => {
+    snapshot.forEach((s: any) => {
+        const p: any = parkings.value.find((x: any) => x.id === s.id)
+        if (p) {
+            p.x = s.x
+            p.y = s.y
+        }
+    })
+}
+
+const undo = () => {
+    if (!undoStack.value.length) return
+    const current = parkings.value.map((p: any) => ({ id: p.id, x: p.x, y: p.y }))
+    const last = undoStack.value.pop()
+    redoStack.value.push(JSON.parse(JSON.stringify(current)))
+    applySnapshot(last)
+}
+
+const redo = () => {
+    if (!redoStack.value.length) return
+    const current = parkings.value.map((p: any) => ({ id: p.id, x: p.x, y: p.y }))
+    const next = redoStack.value.pop()
+    undoStack.value.push(JSON.parse(JSON.stringify(current)))
+    applySnapshot(next)
+}
 
 onMounted(() => {
     loaderStore.isActive = true
@@ -33,11 +70,31 @@ onMounted(() => {
         }
     }).then(response => {
         parkings.value = response.data
+        // сохранить исходное состояние для истории
+        pushHistory()
     }).catch(error => {
         toasterStore.add({ title: 'Ошибка', descr: 'Ошибка при загрузке парковок', type: 'danger' })
     }).finally(() => {
         loaderStore.isActive = false
     })
+
+    const keyHandler = (e: KeyboardEvent) => {
+        // ignore if focus is input/textarea or contentEditable
+        const active = document.activeElement as HTMLElement | null
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+            e.preventDefault()
+            undo()
+        }
+        if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+            e.preventDefault()
+            redo()
+        }
+    }
+
+    window.addEventListener('keydown', keyHandler)
+    onUnmounted(() => window.removeEventListener('keydown', keyHandler))
 })
 
 const saveAllParkings = () => {
@@ -56,6 +113,9 @@ const saveAllParkings = () => {
 const handleMouseDown = (parking: any, event: MouseEvent) => {
     if (!isEditMode.value) return
 
+    // Игнорируем правый клик здесь — контекстное меню обрабатывает выделение отдельно
+    if (event.button === 2) return
+
     // Проверяем Ctrl/Cmd для множественного выбора
     const isMultiSelect = event.ctrlKey || event.metaKey
 
@@ -71,6 +131,9 @@ const handleMouseDown = (parking: any, event: MouseEvent) => {
 
     // Если хотя бы одна парковка выбрана, запоминаем начальные позиции
     if (selectedParkings.value.size > 0) {
+        // Записываем в историю перед началом перемещения
+        pushHistory()
+
         draggedParking.value = parking
         dragStartMouse.value = {
             x: event.clientX,
@@ -115,9 +178,9 @@ const handleContextMenu = (event: MouseEvent, parking: any) => {
     event.preventDefault()
     if (!isEditMode.value) return
 
-    // Если на выбранной парковке - показываем меню
-    if (!selectedParkings.value.has(parking.id)) {
-        selectedParkings.value.clear()
+    // Не сбрасываем выделение при открытии контекстного меню.
+    // Если выделение пустое, добавим текущую парковку в выделение.
+    if (!selectedParkings.value.size) {
         selectedParkings.value.add(parking.id)
     }
 
@@ -137,6 +200,9 @@ const openCoordinatesModal = (parking: any) => {
 
 const saveCoordinatesFromModal = () => {
     if (!modalParking.value) return
+
+    // история перед изменением
+    pushHistory()
 
     const deltaX = modalCoordinates.value.x - modalParking.value.x
     const deltaY = modalCoordinates.value.y - modalParking.value.y
@@ -180,6 +246,7 @@ const handleParkingClick = (event: MouseEvent, parking: any) => {
 
 const autoArrangeSelected = () => {
     if (selectedParkings.value.size === 0) return
+    pushHistory()
 
     const PARKING_WIDTH = 30
     const PARKING_HEIGHT = 65
@@ -227,6 +294,92 @@ const autoArrangeSelected = () => {
         type: 'success'
     })
 }
+
+const alignSelected = (dir: string) => {
+    if (selectedParkings.value.size === 0) return
+    pushHistory()
+
+    const PARKING_WIDTH = 30
+    const PARKING_HEIGHT = 65
+
+    const selectedList: any[] = []
+    selectedParkings.value.forEach(id => {
+        const p = parkings.value.find((x: any) => x.id === id)
+        if (p) selectedList.push(p)
+    })
+
+    const left = Math.min(...selectedList.map(p => p.x))
+    const right = Math.max(...selectedList.map(p => p.x + PARKING_WIDTH))
+    const top = Math.min(...selectedList.map(p => p.y))
+    const bottom = Math.max(...selectedList.map(p => p.y + PARKING_HEIGHT))
+
+    switch (dir) {
+        case 'left':
+            selectedList.forEach(p => p.x = left)
+            break
+        case 'right':
+            selectedList.forEach(p => p.x = right - PARKING_WIDTH)
+            break
+        case 'center': {
+            const centerX = left + (right - left) / 2
+            selectedList.forEach(p => p.x = Math.round(centerX - PARKING_WIDTH / 2))
+            break
+        }
+        case 'top':
+            selectedList.forEach(p => p.y = top)
+            break
+        case 'bottom':
+            selectedList.forEach(p => p.y = bottom - PARKING_HEIGHT)
+            break
+        case 'middle': {
+            const centerY = top + (bottom - top) / 2
+            selectedList.forEach(p => p.y = Math.round(centerY - PARKING_HEIGHT / 2))
+            break
+        }
+    }
+
+    contextMenu.value = null
+    toasterStore.add({ title: 'Успех', descr: 'Выравнивание применено', type: 'success' })
+}
+
+const distributeSelected = (axis: 'h' | 'v') => {
+    if (selectedParkings.value.size < 3) return
+    pushHistory()
+
+    const PARKING_WIDTH = 30
+    const PARKING_HEIGHT = 65
+
+    const selectedList: any[] = []
+    selectedParkings.value.forEach(id => {
+        const p = parkings.value.find((x: any) => x.id === id)
+        if (p) selectedList.push(p)
+    })
+
+    if (axis === 'h') {
+        // sort by x
+        selectedList.sort((a, b) => a.x - b.x)
+        const left = Math.min(...selectedList.map(p => p.x))
+        const right = Math.max(...selectedList.map(p => p.x + PARKING_WIDTH))
+        const span = right - left - PARKING_WIDTH
+        const step = span / (selectedList.length - 1 || 1)
+        selectedList.forEach((p, i) => {
+            p.x = Math.round(left + i * step)
+        })
+    } else {
+        // vertical
+        selectedList.sort((a, b) => a.y - b.y)
+        const top = Math.min(...selectedList.map(p => p.y))
+        const bottom = Math.max(...selectedList.map(p => p.y + PARKING_HEIGHT))
+        const span = bottom - top - PARKING_HEIGHT
+        const step = span / (selectedList.length - 1 || 1)
+        selectedList.forEach((p, i) => {
+            p.y = Math.round(top + i * step)
+        })
+    }
+
+    contextMenu.value = null
+    toasterStore.add({ title: 'Успех', descr: 'Распределение применено', type: 'success' })
+}
 </script>
 
 <template lang="pug">
@@ -250,6 +403,14 @@ main.ip-main
                     button.ip-btn.ip-mr-1(:class="{ active: viewMode === 'list' }" @click="viewMode = 'list'") Список
                     button.ip-btn(:class="{ active: viewMode === 'plan' }" @click="viewMode = 'plan'") План
                     button.ip-btn.ip-ml-1(:class="{ active: isEditMode }" @click="isEditMode = !isEditMode" v-if="viewMode === 'plan'") {{ isEditMode ? 'Готово' : 'Редактировать' }}
+                    button.ip-btn.ip-ml-1(:class="{ active: isEditMode }" @click="undo" :disabled="undoStack.length === 0" title="Отмена (Ctrl+Z)" v-if="viewMode === 'plan' && isEditMode")
+                        svg(width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                            path(d="M3 7v6h6")
+                            path(d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13")
+                    button.ip-btn.ip-ml-1(:class="{ active: isEditMode }" @click="redo" :disabled="redoStack.length === 0" title="Вернуть (Ctrl+Y)" v-if="viewMode === 'plan' && isEditMode")
+                        svg(width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                            path(d="M21 7v6h-6")
+                            path(d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7")
                     button.ip-btn.ip-ml-1(:class="{ active: isEditMode }" @click="saveAllParkings" v-if="viewMode === 'plan' && isEditMode") Сохранить
 
     section.content
@@ -303,6 +464,23 @@ main.ip-main
                             rect(x="14" y="14" width="7" height="7")
                             rect(x="3" y="14" width="7" height="7")
                         span Авто расстановка ({{ selectedParkings.size }})
+                    // Выравнивание (гориз. и верт.)
+                    .context-menu__item(@click="alignSelected('left')" v-if="selectedParkings.size > 1")
+                        span Выровнять влево
+                    .context-menu__item(@click="alignSelected('center')" v-if="selectedParkings.size > 1")
+                        span Выровнять по центру (гор.)
+                    .context-menu__item(@click="alignSelected('right')" v-if="selectedParkings.size > 1")
+                        span Выровнять вправо
+                    .context-menu__item(@click="alignSelected('top')" v-if="selectedParkings.size > 1")
+                        span Выровнять вверх
+                    .context-menu__item(@click="alignSelected('middle')" v-if="selectedParkings.size > 1")
+                        span Выровнять по центру (верт.)
+                    .context-menu__item(@click="alignSelected('bottom')" v-if="selectedParkings.size > 1")
+                        span Выровнять вниз
+                    .context-menu__item(@click="distributeSelected('h')" v-if="selectedParkings.size > 2")
+                        span Равномерно распределить по горизонтали
+                    .context-menu__item(@click="distributeSelected('v')" v-if="selectedParkings.size > 2")
+                        span Равномерно распределить по вертикали
 
             // Модальное окно для ввода координат
             .modal-overlay(v-if="showCoordinatesModal" @click.self="showCoordinatesModal = false")
