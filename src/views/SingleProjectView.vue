@@ -6,6 +6,7 @@ import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import { useIndexStore } from '@/stores';
 import Navigation from '../components/Navigation.vue'
+import { Capacitor } from '@capacitor/core';
 
 const route = useRoute()
 const project = ref<any>({})
@@ -15,7 +16,7 @@ const indexStore = useIndexStore()
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get(indexStore.apiHref + '/api/project/' + route.params.id, {
+    axios.get(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/project/' + route.params.id : '/api/project/' + route.params.id, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
@@ -50,10 +51,20 @@ main.ip-main
                 RouterLink.ip-d__item( v-for="block of project.blocks" 
                 :style="{width: `${block.figure.width}px`, height: `${block.figure.height}px`, top: `${block.coords.lng}px`, left: `${block.coords.lat}px`}"
                 :to="'/project/' + project.id + '/block/' + block.id") {{ block.id }}
+            RouterLink.ip-col-6(:to="'/project/' + route.params.id + '/parking'") 
+                .ip-parking.ip-dfw
+                    span.ip-icon 
+                        //- parking icon
+                        img(src="@/assets/parking.svg" alt="parking")
+                    span Все парковочные места
     Navigation
 </template>
 
 <style scoped lang="scss">
+.ip-blocks{
+    margin-bottom: 130px;
+}
+
 .ip-draft {
     position: relative;
     display: flex;
@@ -85,6 +96,29 @@ main.ip-main
 
     &:hover {
         background-color: var(--ip-bg);
+    }
+}
+
+.ip-parking {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background-color: #E1E1E1;
+    border-radius: 8px;
+    cursor: pointer;
+
+    .ip-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+            width: 100%;
+            height: 100%;
+        }
     }
 }
 </style>

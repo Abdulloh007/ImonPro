@@ -7,6 +7,7 @@ import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import { useIndexStore } from '@/stores';
 import type { Counterparty } from '@/models/couterparty';
+import { Capacitor } from '@capacitor/core';
 
 
 const project = ref<any>([])
@@ -51,7 +52,7 @@ function openModal(type: 'shop' | 'parking' | 'storage') {
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get(indexStore.apiHref + '/api/project/' + route.params.id + '/block/' + route.params.block, {
+    axios.get(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/project/' + route.params.id + '/block/' + route.params.block : '/api/project/' + route.params.id + '/block/' + route.params.block, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }

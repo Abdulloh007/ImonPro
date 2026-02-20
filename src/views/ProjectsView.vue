@@ -25,7 +25,7 @@ const newServer = ref<Server>({
 onMounted(() => {
     indexStore.servers.map(item => {
         loaderStore.isActive = true
-        axios.get(item.link + '/api/projects', {
+        axios.get(Capacitor.isNativePlatform() ? item.link + '/api/projects' : '/api/projects', {
             headers: {
                 'Authorization': 'Basic ' + item.token
             }

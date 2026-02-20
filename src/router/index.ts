@@ -47,9 +47,14 @@ const router = createRouter({
       component: RoomView,
     },
     {
-      path: "/project/:project/block/:block/parking/:id",
+      path: "/project/:project/parking",
       name: 'parking',
       component: ParkingView,
+    },
+    {
+      path: "/project/:project/parking/:id",
+      name: 'parking-place',
+      component: RoomView,
     },
     {
       path: "/settings",

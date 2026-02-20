@@ -9,6 +9,7 @@ import type { Counterparty } from '@/models/couterparty';
 import type { Payment } from '@/models/payment';
 import type Currency from '@/models/currency';
 import type { Apartment } from '@/models/apartment';
+import { Capacitor } from '@capacitor/core';
 
 interface OrderDetails {
 
@@ -326,7 +327,7 @@ function checkFieldsPayment() {
 
 function getPaymentsPlan() {
     loaderStore.isActive = true
-    axios.post(indexStore.apiHref + '/api/payments/' + room.value?.client?.order, {id: room.value?.client?.order, date: room.value?.client?.order_date} , {
+    axios.post(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/payments/' + room.value?.client?.order : '/api/payments/' + room.value?.client?.order, {id: room.value?.client?.order, date: room.value?.client?.order_date} , {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
@@ -342,7 +343,7 @@ function getPaymentsPlan() {
 
 function getSMSTemplates() {
     loaderStore.isActive = true
-    axios.get(indexStore.apiHref + '/api/sms-templates', {
+    axios.get(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/sms-templates' : '/api/sms-templates', {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
@@ -365,7 +366,7 @@ function setSelectedTemplate(id: string) {
 
 function sendSMS(callback?: () => void) {
     loaderStore.isActive = true
-    axios.post(indexStore.apiHref + '/api/sms',  sms_form.value, {
+    axios.post(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/sms' : '/api/sms',  sms_form.value, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
@@ -392,7 +393,7 @@ function createPayment() {
     }
     isPaymentModalOpen.value = ''
     loaderStore.isActive = true
-    axios.post(indexStore.apiHref + '/api/income', {
+    axios.post( Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/income' : '/api/income', {
         id: null,
         order: room.value.order,
         date: new Date().toISOString(),
@@ -447,7 +448,7 @@ main.ip-main
     section.header
         .ip-container.ip-dfw
             .left-slot.ip-dfw
-                RouterLink.ip-btn__back(:to="'/project/' + $route.params.project + '/block/' + $route.params.block")
+                RouterLink.ip-btn__back(:to="'/project/' + $route.params.project + ($route.params.block ? '/block/' + $route.params.block : '/parking')")
                     svg(width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M15 4.5L7 12.5L15 20.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
                 .ip-heading
@@ -456,8 +457,8 @@ main.ip-main
                         RouterLink(to='/') Все проекты
                         span >
                         RouterLink(:to="'/project/' + $route.params.project") {{ room.project }}
-                        span >
-                        RouterLink(:to="'/project/' + $route.params.project + '/block/' + $route.params.block") Блок {{ room.block }}
+                        span(v-if="$route.params.block") >
+                        RouterLink(v-if="$route.params.block" :to="'/project/' + $route.params.project + '/block/' + $route.params.block") Блок {{ room.block }}
                         span(v-if="room.client") >
                         button.ip-btn.ip-btn_danger(@click="isModalOpen = 'active'" v-if="room.client")  {{ counterparty.name}}
             .right-slot.ip-dfw

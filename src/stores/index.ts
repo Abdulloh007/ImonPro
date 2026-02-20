@@ -9,8 +9,8 @@ export const useIndexStore = defineStore('index', () => {
     // const apiHref = 'http://localhost/Main/hs'
     const servers = ref<Server[]>(JSON.parse(localStorage.getItem('ip_servers') || '[]'))
 
-    const apiHref = ref<string>(localStorage.getItem('ip_server') || '')
-    // const apiHref = 'http://10.158.190.10:8012/Main/hs'
+    // const apiHref = ref<string>(localStorage.getItem('ip_server') || '')
+    const apiHref = ref<string>('')
     // const login = localStorage.getItem('ip_login') || ''
     // const password = localStorage.getItem('ip_password') || ''
     const token = ref<string>(localStorage.getItem('ip_token') || '')
