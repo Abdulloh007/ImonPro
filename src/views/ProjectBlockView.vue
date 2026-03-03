@@ -176,7 +176,7 @@ main.ip-main
                         .ip-t__data {{ project.magazine_count - idx }} этаж
                         RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + shop.id" :class="{reserved: shop.reserved, broned: shop.broned}" v-for="shop in shops") 
                             span {{ shop.room_number }} {{ project.block}}
-                            span(v-if="shop.broned") {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[1].slice(0, 1) : ''}}. {{ shop.client.split(' ').length > 2 ? shop.client.split(' ')[2].slice(0, 1) : '' }}.
+                            span(v-if="shop.broned") {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[0] : ''}} {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[1].slice(0, 1) : ''}}. {{ shop.client.split(' ').length > 2 ? shop.client.split(' ')[2].slice(0, 1) : '' }}.
                 .ip-t__row(v-if="!project.places?.store || project.places?.store.length === 0")
                     .ip-t__data.ip-w-full.ip-dfw Нет данных
 

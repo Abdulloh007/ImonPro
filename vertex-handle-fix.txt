@@ -1,0 +1,18 @@
+    .vertex-handle {
+        fill: #fff;
+        stroke: #1976d2;
+        stroke-width: 2;
+        cursor: move;
+
+        &:hover {
+            r: 7;
+        }
+        
+        &.vertex-deletable:hover {
+            fill: #ff4444;
+            stroke: #cc0000;
+            filter: drop-shadow(0 0 4px rgba(255, 68, 68, 0.6));
+        }
+    }
+}
+</style>

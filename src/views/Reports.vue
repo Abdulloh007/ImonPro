@@ -20,6 +20,8 @@ main.ip-main
                     RouterLink(to='/reports/sales') Продажи
                 li.ip-list__item
                     RouterLink(to='/reports/non-sales') Непроданные
+                li.ip-list__item
+                    RouterLink(to='/reports/analysis') Анализ
 
     Navigation
                     

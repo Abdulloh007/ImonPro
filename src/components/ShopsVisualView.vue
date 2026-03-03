@@ -38,6 +38,8 @@ const zoomLevel = ref<number>(1)
 // history stacks for undo/redo
 const history = ref<ShopCoordinates[][]>([])
 const historyIndex = ref<number>(-1)
+const isSaving = ref<boolean>(false)
+const hasChanges = ref<boolean>(false)
 
 const canvasWidth = 1200
 const canvasHeight = 800
@@ -146,6 +148,19 @@ function onMouseDown(e: MouseEvent, shopId: string, handle?: string) {
 
 function onVertexMouseDown(e: MouseEvent, shopId: string, index: number) {
     if (!props.isEditing) return
+    // If Ctrl is pressed on mousedown, treat it as a delete request for the vertex
+    if (e.ctrlKey) {
+        const coords = getShopCoordinates(shopId)
+        if (coords.type === 'polygon' && coords.points && coords.points.length > 3) {
+            e.preventDefault()
+            coords.points.splice(index, 1)
+            shopCoordinates.value.set(shopId, coords)
+            pushHistory()
+            hasChanges.value = true
+        }
+        return
+    }
+
     e.preventDefault()
     const rect = svgElement.value?.getBoundingClientRect()
     if (!rect) return
@@ -280,17 +295,56 @@ function onMouseUp() {
 
     if (draggingVertex.value) {
         pushHistory()
-        saveCoordinates(draggingVertex.value.shopId)
+        hasChanges.value = true
         draggingVertex.value = null
     } else if (draggingShopId.value) {
         pushHistory()
-        saveCoordinates(draggingShopId.value)
+        hasChanges.value = true
         draggingShopId.value = null
     } else if (resizingShopId.value) {
         pushHistory()
-        saveCoordinates(resizingShopId.value)
+        hasChanges.value = true
         resizingShopId.value = null
         resizeHandle.value = null
+    }
+}
+
+async function saveAllCoordinates() {
+    if (!hasChanges.value) return
+    
+    isSaving.value = true
+    try {
+        const allCoords = Array.from(shopCoordinates.value.values())
+        
+        // Save all coordinates
+        await Promise.all(
+            allCoords.map(coords =>
+                axios.post(
+                    `${indexStore.apiHref}/api/project/${props.projectId}/block/${props.blockId}/shop/${coords.id}/coordinates`,
+                    coords,
+                    {
+                        headers: {
+                            'Authorization': 'Basic ' + indexStore.token
+                        }
+                    }
+                )
+            )
+        )
+        
+        hasChanges.value = false
+        toasterStore.add({
+            title: 'Успешно',
+            descr: `Координаты ${allCoords.length} магазинов сохранены`,
+            type: 'success'
+        })
+    } catch (error: any) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: error.message || 'Ошибка при сохранении координат',
+            type: 'danger'
+        })
+    } finally {
+        isSaving.value = false
     }
 }
 
@@ -307,11 +361,6 @@ async function saveCoordinates(shopId: string) {
             }
         )
         emit('updateCoordinates', coords)
-        toasterStore.add({
-            title: 'Успешно',
-            descr: 'Координаты сохранены',
-            type: 'success'
-        })
     } catch (error: any) {
         toasterStore.add({
             title: 'Ошибка',
@@ -327,8 +376,35 @@ function selectShop(shopId: string) {
 }
 
 function handleZoom(event: WheelEvent) {
-    const delta = event.deltaY > 0 ? -0.1 : 0.1
-    zoomLevel.value = Math.max(0.5, Math.min(3, zoomLevel.value + delta))
+    if (event.ctrlKey && selectedShopId.value) {
+        // Ctrl+wheel: scale the selected shop
+        event.preventDefault()
+        const coords = getShopCoordinates(selectedShopId.value)
+        const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1
+        const newCoords: ShopCoordinates = { ...coords }
+
+        if (coords.type === 'rect') {
+            newCoords.width = Math.max(80, (coords.width ?? 250) * scaleFactor)
+            newCoords.height = Math.max(60, (coords.height ?? 150) * scaleFactor)
+        } else if (coords.type === 'polygon' && coords.points) {
+            // scale polygon around its center
+            const xs = coords.points.map(p => p.x)
+            const ys = coords.points.map(p => p.y)
+            const centerX = (Math.min(...xs) + Math.max(...xs)) / 2
+            const centerY = (Math.min(...ys) + Math.max(...ys)) / 2
+            newCoords.points = coords.points.map(p => ({
+                x: centerX + (p.x - centerX) * scaleFactor,
+                y: centerY + (p.y - centerY) * scaleFactor
+            }))
+        }
+        shopCoordinates.value.set(selectedShopId.value, newCoords)
+        pushHistory()
+        hasChanges.value = true
+    } else {
+        // Normal wheel: canvas zoom
+        const delta = event.deltaY > 0 ? -0.1 : 0.1
+        zoomLevel.value = Math.max(0.5, Math.min(3, zoomLevel.value + delta))
+    }
 }
 
 // history helpers
@@ -405,7 +481,7 @@ function toggleShape() {
     }
     shopCoordinates.value.set(selectedShopId.value, newCoords)
     pushHistory()
-    saveCoordinates(selectedShopId.value)
+    hasChanges.value = true
 }
 
 
@@ -432,14 +508,49 @@ function getShopStatus(shop: Shop): string {
 }
 
 
+function deleteVertex(shopId: string, index: number) {
+    const coords = getShopCoordinates(shopId)
+    if (coords.type === 'polygon' && coords.points && coords.points.length > 3) {
+        // keep at least 3 points for a valid polygon
+        coords.points.splice(index, 1)
+        shopCoordinates.value.set(shopId, coords)
+        pushHistory()
+        hasChanges.value = true
+    }
+}
+
 function onPolygonClick(e: MouseEvent, shopId: string) {
-    if (!props.isEditing || !e.ctrlKey) return
+    if (!props.isEditing) return
+    
     const rect = svgElement.value?.getBoundingClientRect()
     if (!rect) return
-    const x = (e.clientX - rect.left) / (rect.width / canvasWidth)
-    const y = (e.clientY - rect.top) / (rect.height / canvasHeight)
+    // Account for zoomLevel when converting screen coords to canvas coords
+    const pixelsPerUnitX = rect.width / (canvasWidth * zoomLevel.value)
+    const pixelsPerUnitY = rect.height / (canvasHeight * zoomLevel.value)
+    const x = (e.clientX - rect.left) / pixelsPerUnitX
+    const y = (e.clientY - rect.top) / pixelsPerUnitY
     const coords = getShopCoordinates(shopId)
-    if (coords.type === 'polygon') {
+    
+    if (coords.type === 'polygon' && coords.points) {
+        // Compute proximity in SCREEN pixels to avoid scale/zoom issues.
+        // Convert each vertex to screen coordinates and compare to event client coords.
+        const pxTolerance = 10 // pixels on screen
+        for (let i = 0; i < coords.points.length; i++) {
+            const pt = coords.points[i]
+            const screenX = rect.left + pt.x * pixelsPerUnitX
+            const screenY = rect.top + pt.y * pixelsPerUnitY
+            const distPx = Math.hypot(screenX - e.clientX, screenY - e.clientY)
+            if (distPx <= pxTolerance && coords.points.length > 3) {
+                // Delete existing point
+                coords.points.splice(i, 1)
+                shopCoordinates.value.set(shopId, coords)
+                pushHistory()
+                hasChanges.value = true
+                return
+            }
+        }
+
+        // No nearby vertex, so add a new point on the edge (use canvas coords x,y)
         const pts = coords.points || []
         let bestIdx = pts.length
         let minDist = Infinity
@@ -456,7 +567,15 @@ function onPolygonClick(e: MouseEvent, shopId: string) {
         coords.points = pts
         shopCoordinates.value.set(shopId, coords)
         pushHistory()
-        saveCoordinates(shopId)
+        hasChanges.value = true
+    }
+}
+
+function handlePolygonClickOrSelect(e: MouseEvent, shopId: string) {
+    if (e.ctrlKey) {
+        onPolygonClick(e, shopId)
+    } else {
+        selectShop(shopId)
     }
 }
 
@@ -485,7 +604,7 @@ const shopsArray = computed(() => {
                 :width="canvasWidth * zoomLevel"
                 :height="canvasHeight * zoomLevel"
                 class="canvas"
-                @click="selectedShopId = null"
+                @click.self="selectedShopId = null"
             >
                 <!-- Grid background -->
                 <defs>
@@ -514,8 +633,7 @@ const shopsArray = computed(() => {
                             :points="item.coords.points.map(p=>p.x+','+p.y).join(' ')"
                             :class="['shop-rect', getShopStatus(item), { selected: selectedShopId === item.id }]"
                             @mousedown="onMouseDown($event, item.id)"
-                            @click.stop="selectShop(item.id)"
-                            @click="onPolygonClick($event, item.id)"
+                            @click.stop="handlePolygonClickOrSelect($event, item.id)"
                         />
                     </template>
                     <template v-else>
@@ -549,7 +667,7 @@ const shopsArray = computed(() => {
                         text-anchor="start"
                         pointer-events="none"
                     >
-                        {{ item.float }}
+                        {{ item.room_number }}
                     </text>
 
                     <!-- Client name -->
@@ -635,6 +753,7 @@ const shopsArray = computed(() => {
                             r="5"
                             class="vertex-handle"
                             @mousedown="onVertexMouseDown($event, item.id, idx)"
+                            :class="{ 'vertex-deletable': item.coords.points && item.coords.points.length > 3 }"
                         />
                     </g>
                 </g>
@@ -653,6 +772,16 @@ const shopsArray = computed(() => {
             </div>
             <div v-if="isEditing && selectedShopId" class="shape-toggle">
                 <button @click="toggleShape()">Toggle Shape</button>
+            </div>
+            <div v-if="isEditing" class="save-controls">
+                <button 
+                    @click="saveAllCoordinates()" 
+                    :disabled="!hasChanges || isSaving"
+                    class="save-button"
+                >
+                    {{ isSaving ? 'Сохранение...' : 'Сохранить' }}
+                </button>
+                <span v-if="hasChanges" class="changes-indicator">● Есть изменения</span>
             </div>
             <small v-if="isEditing" class="edit-info">Кликайте на магазин для выделения, перетаскивайте для перемещения (держите Shift для осевой привязки, Ctrl+клик по ребру – добавить точку)</small>
             <small v-else class="view-info">Кликайте на магазин для просмотра</small>
@@ -848,6 +977,41 @@ const shopsArray = computed(() => {
             }
         }
 
+        .save-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            .save-button {
+                padding: 6px 16px;
+                background-color: #4caf50;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 500;
+                transition: background-color 0.2s ease;
+
+                &:hover:not(:disabled) {
+                    background-color: #45a049;
+                    filter: drop-shadow(0 0 4px rgba(76, 175, 80, 0.4));
+                }
+
+                &:disabled {
+                    background-color: #ccc;
+                    cursor: not-allowed;
+                    opacity: 0.6;
+                }
+            }
+
+            .changes-indicator {
+                color: #ff9800;
+                font-size: 12px;
+                font-weight: 500;
+            }
+        }
+
         .edit-info,
         .view-info {
             color: #666;
@@ -863,6 +1027,12 @@ const shopsArray = computed(() => {
 
         &:hover {
             r: 7;
+        }
+        
+        &.vertex-deletable:hover {
+            fill: #ff4444;
+            stroke: #cc0000;
+            filter: drop-shadow(0 0 4px rgba(255, 68, 68, 0.6));
         }
     }
 }
