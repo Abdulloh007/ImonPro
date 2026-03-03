@@ -16,7 +16,7 @@ const indexStore = useIndexStore()
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/project/' + route.params.id : '/api/project/' + route.params.id, {
+    axios.get(indexStore.apiHref + '/api/project/' + route.params.id, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }

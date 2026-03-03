@@ -2,19 +2,26 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue';
 import axios from 'axios';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import { useIndexStore } from '@/stores';
+import ShopsVisualView from '@/components/ShopsVisualView.vue';
+import ShopCoordinatesEditor from '@/components/ShopCoordinatesEditor.vue';
 import type { Counterparty } from '@/models/couterparty';
 import { Capacitor } from '@capacitor/core';
 
 
 const project = ref<any>([])
 const route = useRoute()
+const router = useRouter()
 const loaderStore = UseLoaderStore()
 const toasterStore = useToasterStore()
 const indexStore = useIndexStore()
+
+const shopsViewMode = ref<'grid' | 'visual'>('grid')
+const isEditingShops = ref(false)
+const selectedShopId = ref<string | null>(null)
 
 
 // const appartment = ref<any>({})
@@ -50,9 +57,16 @@ function openModal(type: 'shop' | 'parking' | 'storage') {
     isModalOpen.value = 'active'
 }
 
+function goToShop(shopId: string) {
+    selectedShopId.value = shopId
+    if (!isEditingShops.value) {
+        router.push(`/project/${route.params.id}/block/${route.params.block}/room/${shopId}`)
+    }
+}
+
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/project/' + route.params.id + '/block/' + route.params.block : '/api/project/' + route.params.id + '/block/' + route.params.block, {
+    axios.get(indexStore.apiHref + '/api/project/' + route.params.id + '/block/' + route.params.block, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
@@ -64,6 +78,13 @@ onMounted(() => {
         }
 
         project.value.places.room = roomsList
+
+        let shopList: any[] = []
+        for (let i = res.data?.magazine_count; i > 0; i--) {
+            shopList.push(res.data?.places?.store.filter((item: any) => item?.float == i).sort((a: any, b: any) => a.room_number < b.room_number ? -1 : 1))
+        }
+
+        project.value.places.store = shopList
 
         project.value.places.parking = res.data?.places?.parking.map((item: any) => {
             item.parking_number = parseInt(item.name.split(' ')[item.name.split(' ').length - 1])
@@ -141,16 +162,41 @@ main.ip-main
                         //- span
         .ip-container
             .ip-heading.ip-w-full.ip-mb-2  
-                h2.title 
-                    b Магазины
-            .ip-table(v-if="project")
-                .ip-t__row(v-for="(shop, idx) in project.places?.store")
-                    RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + shop.id" :class="{reserved: shop.reserved, broned: shop.broned}") 
-                        span {{ shop.float }} этаж
-                        span(v-if="shop.broned") {{ shop.client.split(' ')[0] }} {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[1].slice(0, 1) : ''}}. {{ shop.client.split(' ').length > 2 ? shop.client.split(' ')[2].slice(0, 1) : '' }}.
-                        //- span
+                .ip-dfw(style="display: flex; justify-content: space-between; align-items: center;")
+                    h2.title 
+                        b Магазины
+                    .shops-view-controls
+                        button.ip-btn(:class="{active: shopsViewMode === 'grid'}" @click="shopsViewMode = 'grid'") Таблица
+                        button.ip-btn(:class="{active: shopsViewMode === 'visual'}" @click="shopsViewMode = 'visual'") Визуально
+                        button.ip-btn(v-if="shopsViewMode === 'visual'" :class="{active: isEditingShops}" @click="isEditingShops = !isEditingShops") {{ isEditingShops ? 'Закончить редактирование' : 'Редактировать' }}
+            
+            <!-- Grid view -->
+            .ip-table(v-if="project && shopsViewMode === 'grid'")
+                .ip-t__row(v-for="(shops, idx) in project.places?.store")
+                        .ip-t__data {{ project.magazine_count - idx }} этаж
+                        RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + shop.id" :class="{reserved: shop.reserved, broned: shop.broned}" v-for="shop in shops") 
+                            span {{ shop.room_number }} {{ project.block}}
+                            span(v-if="shop.broned") {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[1].slice(0, 1) : ''}}. {{ shop.client.split(' ').length > 2 ? shop.client.split(' ')[2].slice(0, 1) : '' }}.
                 .ip-t__row(v-if="!project.places?.store || project.places?.store.length === 0")
                     .ip-t__data.ip-w-full.ip-dfw Нет данных
+
+            <!-- Visual view -->
+            .ip-w-100(v-if="project && shopsViewMode === 'visual'")
+                ShopsVisualView(
+                    v-for="shop in project.places?.store || []"
+                    :shops="shop"
+                    :project-id="route.params.id"
+                    :block-id="route.params.block"
+                    :is-editing="isEditingShops"
+                    @select-shop="goToShop"
+                )
+            
+            <!-- Coordinates editor for visual mode -->
+            div(v-if="project && shopsViewMode === 'visual' && isEditingShops && selectedShopId")
+                ShopCoordinatesEditor(
+                    v-if="project.places?.store"
+                    :coordinates="project.places.store.find((s: any) => s.id === selectedShopId)?.coordinates || {id: selectedShopId, x: 0, y: 0, width: 250, height: 150}"
+                )
 
         .ip-container
             .ip-heading.ip-w-full.ip-mb-2  
@@ -327,7 +373,8 @@ main.ip-main
     }
 }
 
-.ip-parking, .ip-storage {
+.ip-parking,
+.ip-storage {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -379,6 +426,32 @@ main.ip-main
 @media (max-width: 576px) {
     .right-slot {
         width: calc(100% - 45px);
+    }
+}
+
+.shops-view-controls {
+    display: flex;
+    gap: 10px;
+
+    .ip-btn {
+        padding: 8px 16px;
+        border: 2px solid #d65c10;
+        background-color: transparent;
+        color: #d65c10;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+
+        &:hover {
+            background-color: #d65c10;
+            color: #fff;
+        }
+
+        &.active {
+            background-color: #d65c10;
+            color: #fff;
+        }
     }
 }
 </style>

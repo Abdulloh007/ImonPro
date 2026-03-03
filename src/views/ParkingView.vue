@@ -13,6 +13,8 @@ const loaderStore = UseLoaderStore()
 const toasterStore = useToasterStore()
 const indexStore = useIndexStore()
 
+const parkingsSelectedlevel = ref<number>(-1)
+const parkingsLevels = ref<any[]>([])
 const parkings = ref([])
 const viewMode = ref('list')
 const isEditMode = ref(false)
@@ -64,12 +66,25 @@ const redo = () => {
 
 onMounted(() => {
     loaderStore.isActive = true
-    axios.get(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/project/' + route.params.project + '/parking' : '/api/project/' + route.params.project + '/parking', {
+    axios.get(indexStore.apiHref + '/api/project/' + route.params.project + '/parking', {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
     }).then(response => {
         parkings.value = response.data
+        
+        // группируем парковки по уровням
+        const levels = new Map<number, any[]>()
+        parkings.value.forEach((p: any) => {
+            if (!levels.has(p.level)) {
+                levels.set(p.level, [])
+            }
+            levels.get(p.level)?.push(p)
+        })
+        
+        parkingsLevels.value = Array.from(levels.keys()).sort((a, b) => b - a)
+        // console.log('parkingsByLevel', parkingsByLevel.value)
+
         // сохранить исходное состояние для истории
         pushHistory()
     }).catch(error => {
@@ -99,7 +114,7 @@ onMounted(() => {
 
 const saveAllParkings = () => {
 
-    axios.post(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/project/' + route.params.project + '/parking' : '/api/project/' + route.params.project + '/parking', parkings.value, {
+    axios.post(indexStore.apiHref + '/api/project/' + route.params.project + '/parking', parkings.value, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }
@@ -108,6 +123,10 @@ const saveAllParkings = () => {
     }).catch(() => {
         toasterStore.add({ title: 'Ошибка', descr: 'Ошибка при сохранении позиций парковок', type: 'danger' })
     })
+}
+
+const getParkingsBySelectedLevel = () => {
+    return parkings.value.filter((p: any) => p.level === parkingsSelectedlevel.value)
 }
 
 const handleMouseDown = (parking: any, event: MouseEvent) => {
@@ -428,6 +447,8 @@ main.ip-main
                             RouterLink.ip-btn(:to="'/project/' + $route.params.project + '/parking/' + parking.id") Подробнее
 
             .ip-parking-plan(v-if="viewMode === 'plan'")
+                .ip-parking-level.ip-dfw
+                    button.ip-btn.ip-mb-2.ip-mr-1(v-for="(level, index) in parkingsLevels" :key="index" @click="parkingsSelectedlevel = level") Уровень {{ level }}
                 .ip-parking-outlet(
                     @mousemove="handleMouseMove"
                     @mouseup="handleMouseUp"
@@ -435,10 +456,10 @@ main.ip-main
                     @click="handleOutletClick"
                     @contextmenu.prevent
                 )
-                    img(src="").parking-plan-bg
+                    img(:src="'/img/parking-plan.png'").parking-plan-bg
                     .parking-placeholder(v-if="parkings.length === 0") Нет парковок для отображения
                     .parking(
-                        v-for="parking in parkings" 
+                        v-for="parking in getParkingsBySelectedLevel()" 
                         :key="parking.id" 
                         :style="{ left: parking.x + 'px', top: parking.y + 'px', transform: 'rotate(' + parking.rotation + 'deg)' }" 
                         :class="{ free: !parking.client, occupied: parking.client, 'edit-mode': isEditMode, selected: isSelected(parking.id) }"
@@ -548,10 +569,15 @@ main.ip-main
         user-select: none;
     }
 
+    img.parking-plan-bg {
+        width: auto;
+        height: 700px;
+    }
+
     .parking {
         position: absolute;
-        width: 30px;
-        height: 65px;
+        width: 35px;
+        height: 75px;
         background-image: url('@/assets/car.png');
         background-size: 100%;
         background-repeat: no-repeat;

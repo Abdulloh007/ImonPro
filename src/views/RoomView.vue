@@ -393,7 +393,7 @@ function createPayment() {
     }
     isPaymentModalOpen.value = ''
     loaderStore.isActive = true
-    axios.post( Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/income' : '/api/income', {
+    axios.post(indexStore.apiHref + '/api/income', {
         id: null,
         order: room.value.order,
         date: new Date().toISOString(),
@@ -475,7 +475,7 @@ main.ip-main
             .ip-row
                 .ip-col-12.ip-room__plan
                     h4 {{ room.name }}
-                    img(:src="room.room_plane !== null && room.room_plane !== undefined && room.room_plane !== '' ? 'data:image;base64,' + room.room_plane : ''")
+                    img(:src="room.room_plane !== null && room.room_plane !== undefined && room.room_plane !== '' ? 'data:image;base64,' + room.room_plane : '/default.png'" alt="План квартиры")
                 //- .ip-col-6.ip-room__plan__descr
                 //-     p(v-html="room.description")
             .ip-row
@@ -507,7 +507,7 @@ main.ip-main
                         label(for="total_sum") Ежемесячная Оплата
                         input#total_sum(type="number" v-model="monthly_sum" @change="calcInstallment()" @focus="(e) => e.target.value == '0' ? e.target.value = '' : null")
                 .ip-col-6.ip-room__whole__plane
-                    img(:src="room.block_plane !== null && room.block_plane !== undefined && room.block_plane !== '' ? 'data:image;base64,' + room.block_plane : ''")
+                    img(:src="room.block_plane !== null && room.block_plane !== undefined && room.block_plane !== '' ? 'data:image;base64,' + room.block_plane : '/default.png'" alt="План блока")
 
     .ip-modal(:class="isModalOpen")
         form.ip-modal__container(@submit.prevent="createOrder()" :ref="form")
