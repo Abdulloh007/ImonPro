@@ -5,7 +5,6 @@ import { useToasterStore } from '@/stores/toaster';
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import Navigation from '../components/Navigation.vue';
 import { Capacitor } from '@capacitor/core';
 
 
@@ -171,7 +170,6 @@ main.ip-main
                 .ip-rooms_quantity__item
                     .ip-rooms_quantity__title 4 комнатные
                     .ip-rooms_quantity__value {{ totalRooms4 }}
-    Navigation
 </template>
 
 <style scoped lang="scss">

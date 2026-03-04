@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import router from '@/router';
-import Navigation from '../components/Navigation.vue'
 
 function exit() {
     localStorage.clear()
@@ -30,8 +29,6 @@ main.ip-main
                 //-     RouterLink(to='/settings/faq') Часто задаваемые вопросы
                 li.ip-settings__item
                     RouterLink(to='/settings/support') Поддержка
-    
-    Navigation
 </template>
 
 <style scoped lang=scss>

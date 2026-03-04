@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import Navigation from '../components/Navigation.vue';
-
 </script>
 
 <template lang="pug"> 
@@ -22,8 +20,6 @@ main.ip-main
                     RouterLink(to='/reports/non-sales') Непроданные
                 li.ip-list__item
                     RouterLink(to='/reports/analysis') Анализ
-
-    Navigation
                     
 </template>
 

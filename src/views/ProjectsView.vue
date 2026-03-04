@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import Navigation from '../components/Navigation.vue'
 import ProjectList from '../components/ProjectList.vue'
 import axios from 'axios';
 import { useIndexStore } from '@/stores';
@@ -63,7 +62,6 @@ main.ip-main
                     svg(width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M12 7V17M7 12L17 12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
     ProjectList(:list="projectsListRef")
-    Navigation  
     .ip-modal(:class="isModalOpen")
         form.ip-modal__container(@submit.prevent="addServer()" :ref="form")
             .ip-modal__header

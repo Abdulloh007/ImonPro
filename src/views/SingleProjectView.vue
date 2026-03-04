@@ -5,7 +5,6 @@ import { useRoute } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import { useIndexStore } from '@/stores';
-import Navigation from '../components/Navigation.vue'
 import { Capacitor } from '@capacitor/core';
 
 const route = useRoute()
@@ -57,7 +56,6 @@ main.ip-main
                         //- parking icon
                         img(src="@/assets/parking.svg" alt="parking")
                     span Все парковочные места
-    Navigation
 </template>
 
 <style scoped lang="scss">

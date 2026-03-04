@@ -20,7 +20,6 @@ import {
     type ChartData,
     type ChartOptions
 } from 'chart.js'
-import Navigation from '../components/Navigation.vue'
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Filler)
 
@@ -290,7 +289,7 @@ async function loadProjectOptions() {
 
     for (const server of indexStore.servers) {
         try {
-            const response = await axios.get(indexStore.apiHref + '/api/projects', {
+            const response = await axios.get(server.link + '/api/projects', {
                 headers: {
                     Authorization: 'Basic ' + server.token
                 }
@@ -332,7 +331,7 @@ async function loadProjectOptions() {
 }
 
 async function fetchProjectAnalytics(project: ProjectOption): Promise<AnalyticsResponse> {
-    const response = await axios.get(indexStore.apiHref + '/api/analytics/overview/' + project.projectId, {
+    const response = await axios.get(project.serverLink + '/api/analytics/overview/' + project.projectId, {
         headers: {
             Authorization: 'Basic ' + project.token
         }
@@ -483,8 +482,6 @@ main.ip-main
                         .ip-t__data {{ formatNumber(row.reserved) }}
                         .ip-t__data {{ formatNumber(row.available) }}
                         .ip-t__data {{ formatNumber(row.soldSquare) }}
-
-    Navigation
 </template>
 
 <style scoped lang="scss">
