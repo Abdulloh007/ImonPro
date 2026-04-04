@@ -30,6 +30,11 @@ const undoStack = ref<any[]>([])
 const redoStack = ref<any[]>([])
 const MAX_HISTORY = 100
 
+const role = ref<any>({
+    degree: 999,
+    name: ''
+})
+
 const pushHistory = () => {
     const snapshot = parkings.value.map((p: any) => ({ id: p.id, x: p.x, y: p.y }))
     undoStack.value.push(JSON.parse(JSON.stringify(snapshot)))
@@ -65,6 +70,7 @@ const redo = () => {
 }
 
 onMounted(() => {
+    role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":999}')
     loaderStore.isActive = true
     axios.get(indexStore.apiHref + '/api/project/' + route.params.project + '/parking', {
         headers: {
@@ -406,7 +412,7 @@ main.ip-main
     section.header
         .ip-container.ip-dfw
             .left-slot.ip-dfw
-                RouterLink.ip-btn__back(:to="'/project/' + $route.params.project + '/block/' + $route.params.block")
+                RouterLink.ip-btn__back(:to="'/project/' + $route.params.project")
                     svg(width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M15 4.5L7 12.5L15 20.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
                 .ip-heading
@@ -437,12 +443,12 @@ main.ip-main
             .ip-table.ip-col-12(v-if="viewMode === 'list'")
                 .ip-table__header.ip-dfw
                     .ip-table__cell Номер парковки
-                    .ip-table__cell Клиент
+                    .ip-table__cell(v-if="role.degree < 3") Клиент
                     .ip-table__cell Действия
                 .ip-table__body
                     .ip-table__row.ip-dfw(v-for="parking in parkings" :key="parking.id")
                         .ip-table__cell {{ parking.number }}
-                        .ip-table__cell {{ parking.client ? parking.client.name : 'Свободна' }}
+                        .ip-table__cell(v-if="role.degree < 3") {{ parking.client ? parking.client.name : 'Свободна' }}
                         .ip-table__cell 
                             RouterLink.ip-btn(:to="'/project/' + $route.params.project + '/parking/' + parking.id") Подробнее
 

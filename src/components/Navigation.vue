@@ -1,7 +1,15 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
 defineProps<{
     collapsed: boolean
 }>()
+
+const role = ref<any>({
+    degree: 999,
+    name: ''
+})
+role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":999}')
 
 const emit = defineEmits<{
     (e: 'toggle-sidebar'): void
@@ -30,7 +38,7 @@ section.ip-navigation
                         path(d="M3.5 9.25L12 3L20.5 9.25V19.5C20.5 20.0523 20.0523 20.5 19.5 20.5H4.5C3.94772 20.5 3.5 20.0523 3.5 19.5V9.25Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
                         path(d="M9.5 20.5V13H14.5V20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
                 span Проекты
-            RouterLink.ip-menu__item(to="/reports")
+            RouterLink.ip-menu__item(to="/reports" v-if="role.degree < 3")
                 .ip-menu__icon
                     svg(viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg")
                         path(d="M12 3.5V6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round")

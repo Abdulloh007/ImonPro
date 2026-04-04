@@ -65,6 +65,7 @@ function goToShop(shopId: string) {
 }
 
 onMounted(() => {
+    role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":999}')
     loaderStore.isActive = true
     axios.get(indexStore.apiHref + '/api/project/' + route.params.id + '/block/' + route.params.block, {
         headers: {
@@ -158,7 +159,7 @@ main.ip-main
                     .ip-t__data.ip-dfw {{ project.float_count - idx}}
                     RouterLink.ip-t__data.room.ip-dfw(v-for="item in rooms" :to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + item.id" :class="{reserved: item.reserved, broned: item.broned}") 
                         span {{ item.room_number }} кв
-                        span(v-if="item.broned") {{ item.client.split(' ')[0] }} {{ item.client.split(' ').length > 1 ? item.client.split(' ')[1].slice(0, 1) : ''}}. {{ item.client.split(' ').length > 2 ? item.client.split(' ')[2].slice(0, 1) : '' }}.
+                        span(v-if="item.broned && role.degree < 3") {{ item.client.split(' ')[0] }} {{ item.client.split(' ').length > 1 ? item.client.split(' ')[1].slice(0, 1) : ''}}. {{ item.client.split(' ').length > 2 ? item.client.split(' ')[2].slice(0, 1) : '' }}.
                         //- span
         .ip-container
             .ip-heading.ip-w-full.ip-mb-2  
@@ -176,7 +177,7 @@ main.ip-main
                         .ip-t__data {{ project.magazine_count - idx }} этаж
                         RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + shop.id" :class="{reserved: shop.reserved, broned: shop.broned}" v-for="shop in shops") 
                             span {{ shop.room_number }} {{ project.block}}
-                            span(v-if="shop.broned") {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[0] : ''}} {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[1].slice(0, 1) : ''}}. {{ shop.client.split(' ').length > 2 ? shop.client.split(' ')[2].slice(0, 1) : '' }}.
+                            span(v-if="shop.broned && role.degree < 3") {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[0] : ''}} {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[1].slice(0, 1) : ''}}. {{ shop.client.split(' ').length > 2 ? shop.client.split(' ')[2].slice(0, 1) : '' }}.
                 .ip-t__row(v-if="!project.places?.store || project.places?.store.length === 0")
                     .ip-t__data.ip-w-full.ip-dfw Нет данных
 
@@ -206,7 +207,7 @@ main.ip-main
                 .ip-t__row(v-for="(underground, idx) in project.places?.underground")
                     RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + underground.id" :class="{reserved: underground.reserved, broned: underground.broned}") 
                         span {{ underground.float }} этаж
-                        span(v-if="underground.broned") {{ underground.client.split(' ')[0] }} {{ underground.client.split(' ').length > 1 ? underground.client.split(' ')[1].slice(0, 1) : ''}}. {{ underground.client.split(' ').length > 2 ? underground.client.split(' ')[2].slice(0, 1) : '' }}.
+                        span(v-if="underground.broned && role.degree < 3") {{ underground.client.split(' ')[0] }} {{ underground.client.split(' ').length > 1 ? underground.client.split(' ')[1].slice(0, 1) : ''}}. {{ underground.client.split(' ').length > 2 ? underground.client.split(' ')[2].slice(0, 1) : '' }}.
                         //- span
                 .ip-t__row(v-if="!project.places?.underground || project.places?.underground.length === 0")
                     .ip-t__data.ip-w-full.ip-dfw Нет данных
@@ -222,7 +223,7 @@ main.ip-main
                             //- storage icon
                             img(src="@/assets/storage.png" alt="storage")
                         span Кладовая №{{ storage.storage_number }} 
-                        span(v-if="storage.broned") {{ storage.client.split(' ')[0] }} {{ storage.client.split(' ').length > 1 ? storage.client.split(' ')[1].slice(0, 1) : ''}}. {{ storage.client.split(' ').length > 2 ? storage.client.split(' ')[2].slice(0, 1) : '' }}.
+                        span(v-if="storage.broned && role.degree < 3") {{ storage.client.split(' ')[0] }} {{ storage.client.split(' ').length > 1 ? storage.client.split(' ')[1].slice(0, 1) : ''}}. {{ storage.client.split(' ').length > 2 ? storage.client.split(' ')[2].slice(0, 1) : '' }}.
                         //- span
             .ip-t__row(v-if="!project.places?.storage || project.places?.storage.length === 0")
                 .ip-t__data.ip-w-full.ip-dfw Нет данных
@@ -238,7 +239,7 @@ main.ip-main
                             //- parking icon
                             img(src="@/assets/parking.svg" alt="parking")
                         span {{ parking.parking_number }} место
-                        span(v-if="parking.broned") {{ parking.client.split(' ')[0] }} {{ parking.client.split(' ').length > 1 ? parking.client.split(' ')[1].slice(0, 1) : ''}}. {{ parking.client.split(' ').length > 2 ? parking.client.split(' ')[2].slice(0, 1) : '' }}.
+                        span(v-if="parking.broned && role.degree < 3") {{ parking.client.split(' ')[0] }} {{ parking.client.split(' ').length > 1 ? parking.client.split(' ')[1].slice(0, 1) : ''}}. {{ parking.client.split(' ').length > 2 ? parking.client.split(' ')[2].slice(0, 1) : '' }}.
                         //- span
             .ip-t__row(v-if="!project.places?.parking || project.places?.parking.length === 0")
                 .ip-t__data.ip-w-full.ip-dfw Нет данных
