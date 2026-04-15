@@ -381,7 +381,7 @@ function setSelectedTemplate(id: string) {
 
 function sendSMS(callback?: () => void) {
     loaderStore.isActive = true
-    axios.post(Capacitor.isNativePlatform() ? indexStore.apiHref + '/api/sms' : '/api/sms', sms_form.value, {
+    axios.post(indexStore.apiHref + '/api/sms', sms_form.value, {
         headers: {
             'Authorization': 'Basic ' + indexStore.token
         }

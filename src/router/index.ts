@@ -11,6 +11,7 @@ import ReportsVue from '@/views/Reports.vue'
 import NonSalesViewVue from '@/views/NonSalesView.vue'
 import ServersView from '@/views/ServersView.vue'
 import AnalysisViewVue from '@/views/AnalysisView.vue'
+import ClientsPaymentsReportView from '@/views/ClientsPaymentsReportView.vue'
 
 const isAuthenticated = localStorage.getItem('ip_token') ? true : false;
 
@@ -86,6 +87,11 @@ const router = createRouter({
       path: "/reports/analysis",
       name: 'analysis',
       component: AnalysisViewVue,
+    },
+    {
+      path: "/reports/clients-payments",
+      name: 'clients-payments',
+      component: ClientsPaymentsReportView,
     },
     // {
     //   path: '/about',

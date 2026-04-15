@@ -20,6 +20,8 @@ main.ip-main
                     RouterLink(to='/reports/non-sales') Непроданные
                 li.ip-list__item
                     RouterLink(to='/reports/analysis') Анализ
+                li.ip-list__item
+                    RouterLink(to='/reports/clients-payments') Должники по оплатам
                     
 </template>
 
