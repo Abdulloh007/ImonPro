@@ -9,6 +9,12 @@ import 'vue3-easy-data-table/dist/style.css'
 import * as XLSX from 'xlsx'
 import PaymentSchedule from '@/components/PaymentSchedule.vue'
 
+interface Currency {
+    code: string
+    name: string
+    symbol: string
+}
+
 interface ActualPayment {
     id?: number | string
     sum: number
@@ -30,6 +36,12 @@ interface ClientInfo {
     name?: string
     full_name?: string
     phone?: string
+    order?: string
+    block?: string | number
+    float?: string | number
+    apartment?: string | number
+    apartment_type?: string
+    another_phone?: boolean
 }
 
 interface ClientPaymentsReportItem {
@@ -56,9 +68,11 @@ interface PaymentRow {
 interface DebtorRow {
     id: string
     clientName: string
+    apartmentInfo: string
     phone: string
     lastPaymentDate: string | null
     overdueDays: number
+    overdueUnpaidCount: number
     nextPaymentDate: string | null
     totalPaid: number
     totalRemaining: number
@@ -68,6 +82,10 @@ interface DebtorRow {
     actual: ActualPayment[]
     plan: PlanPayment[]
     serverLabel: string
+    serverLink: string
+    serverToken: string
+    order: string
+    client: ClientInfo
     paymentState: string
 }
 
@@ -79,19 +97,97 @@ const toasterStore = useToasterStore()
 
 const debtors = ref<DebtorRow[]>([])
 const selectedDebtor = ref<DebtorRow | null>(null)
+const selectedServer = ref<string>('')
+const selectedClient = ref<string>('')
+const clientNameSearch = ref<string>('')
+const phoneSearch = ref<string>('')
+const paymentSum = ref<number>(0)
+const paymentBase = ref<string>('')
+const paymentDate = ref<string>('')
+const paymentCurrency = ref<Currency>({ code: '972', name: 'Сомони', symbol: 'TJS' })
+const isPaymentBlockOpen = ref<boolean>(false)
+const isSmsBlockOpen = ref<boolean>(false)
+const smsTemplates = ref<{ id: number; name: string; text: string }[]>([])
+const smsForm = ref<{ phone: string; message: string }>({ phone: '', message: '' })
 
-const totalDebtors = computed(() => debtors.value.length)
-const totalRemainingAmount = computed(() => debtors.value.reduce((sum, item) => sum + Number(item.totalRemaining || 0), 0))
-const totalPaidAmount = computed(() => debtors.value.reduce((sum, item) => sum + Number(item.totalPaid || 0), 0))
+const currencies = ref<Currency[]>([
+    { code: '840', name: 'Доллар', symbol: '$' },
+    { code: '978', name: 'Евро', symbol: '€' },
+    { code: '643', name: 'Рубль', symbol: '₽' },
+    { code: '392', name: 'Иена', symbol: '¥' },
+    { code: '826', name: 'Фунт', symbol: '£' },
+    { code: '156', name: 'Юань', symbol: '¥' },
+    { code: '972', name: 'Сомони', symbol: 'TJS' }
+])
+
+const serverOptions = computed(() => {
+    return Array.from(new Set(debtors.value.map(item => item.serverLabel))).sort((a, b) => a.localeCompare(b, 'ru'))
+})
+
+const clientOptions = computed(() => {
+    const base = selectedServer.value
+        ? debtors.value.filter(item => item.serverLabel === selectedServer.value)
+        : debtors.value
+
+    return Array.from(new Set(base.map(item => item.clientName))).sort((a, b) => a.localeCompare(b, 'ru'))
+})
+
+const filteredDebtors = computed(() => {
+    const normalizedPhone = phoneSearch.value.trim().replace(/\D/g, '')
+    const normalizedClientName = clientNameSearch.value.trim().toLocaleLowerCase('ru')
+
+    return debtors.value.filter(item => {
+        if (selectedServer.value && item.serverLabel !== selectedServer.value) {
+            return false
+        }
+
+        if (selectedClient.value && item.clientName !== selectedClient.value) {
+            return false
+        }
+
+        if (normalizedClientName) {
+            const itemClientName = String(item.clientName || '').toLocaleLowerCase('ru')
+            if (!itemClientName.includes(normalizedClientName)) {
+                return false
+            }
+        }
+
+        if (!normalizedPhone) {
+            return true
+        }
+
+        const itemPhone = String(item.phone || '').replace(/\D/g, '')
+        return itemPhone.includes(normalizedPhone)
+    })
+})
+
+const totalDebtors = computed(() => filteredDebtors.value.length)
+const totalRemainingAmount = computed(() => filteredDebtors.value.reduce((sum, item) => sum + Number(item.totalRemaining || 0), 0))
+const totalPaidAmount = computed(() => filteredDebtors.value.reduce((sum, item) => sum + Number(item.totalPaid || 0), 0))
 
 const headers: Header[] = [
     { text: 'Клиент', value: 'clientName', sortable: true },
+    { text: 'Квартира', value: 'apartmentInfo', sortable: true },
     { text: 'Номер телефона', value: 'phone', sortable: true },
     { text: 'Дата последней оплаты', value: 'lastPaymentDate', sortable: true },
     { text: 'Дней просрочки', value: 'overdueDays', sortable: true },
+    { text: 'Просроченные и не оплаченные', value: 'overdueUnpaidCount', sortable: true },
     { text: 'Дата следующей оплаты', value: 'nextPaymentDate', sortable: true },
     { text: 'Pie chart', value: 'paymentState', sortable: false }
 ]
+
+const paymentBaseOptions = computed(() => {
+    const plans = (selectedDebtor.value?.plan || []).filter(plan => Number(plan.paid || 0) < Number(plan.sum || 0))
+    return plans.map((plan, index) => {
+        const date = formatDate(plan.date)
+        const sum = formatMoney(Number(plan.sum || 0))
+        const label = `${index + 1}. ${date} - ${sum}`
+        return {
+            label,
+            value: label
+        }
+    })
+})
 
 function startOfDay(value: string | Date) {
     const date = new Date(value)
@@ -123,6 +219,15 @@ function formatMoney(value?: number) {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2
     })
+}
+
+function formatApartmentInfo(client?: ClientInfo) {
+    const block = client?.block ? `Блок ${client.block}` : 'Блок -'
+    const floor = client?.float ? `Этаж ${client.float}` : 'Этаж -'
+    const apartmentType = client?.apartment_type || 'Тип -'
+    const apartment = client?.apartment ? `Кв. ${client.apartment}` : 'Кв. -'
+
+    return `${block} + ${floor} + ${apartmentType} + ${apartment}`
 }
 
 function getServers() {
@@ -251,7 +356,7 @@ function buildPaymentRows(plans: PlanPayment[], actuals: ActualPayment[]) {
     return result
 }
 
-function mapDebtor(item: ClientPaymentsReportItem, serverLabel: string, index: number): DebtorRow | null {
+function mapDebtor(item: ClientPaymentsReportItem, serverLabel: string, serverLink: string, serverToken: string, index: number): DebtorRow | null {
     const actuals = Array.isArray(item.actual)
         ? item.actual.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         : []
@@ -277,9 +382,11 @@ function mapDebtor(item: ClientPaymentsReportItem, serverLabel: string, index: n
     return {
         id: String(item.client?.id || item.client?.phone || item.client?.name || `${serverLabel}-${index}`),
         clientName: item.client?.name || item.client?.full_name || 'Без имени',
+        apartmentInfo: formatApartmentInfo(item.client),
         phone: item.client?.phone || '—',
         lastPaymentDate: lastPayment?.date || null,
         overdueDays: Number(firstOverdueRow.overdueDays || 0),
+        overdueUnpaidCount: overdueRows.length,
         nextPaymentDate: firstOverdueRow.date || null,
         totalPaid,
         totalRemaining,
@@ -289,6 +396,10 @@ function mapDebtor(item: ClientPaymentsReportItem, serverLabel: string, index: n
         actual: actuals,
         plan: plans,
         serverLabel,
+        serverLink,
+        serverToken,
+        order: String(item.client?.order || (item as any)?.order || ''),
+        client: item.client || {},
         paymentState: ''
     }
 }
@@ -302,14 +413,212 @@ function getPieStyle(item: DebtorRow) {
 
 function openDetails(item: DebtorRow) {
     selectedDebtor.value = item
+    paymentDate.value = new Date().toISOString().slice(0, 10)
+    paymentBase.value = ''
+    if (paymentBaseOptions.value.length > 0) {
+        paymentBase.value = paymentBaseOptions.value[0].value
+    }
+    isPaymentBlockOpen.value = false
+    isSmsBlockOpen.value = false
+    smsForm.value.phone = item.phone || ''
+    smsForm.value.message = `Уважаемый(ая) ${item.clientName}, напоминаем о необходимости оплаты по Вашему договору. С уважением, IMON GROUP.`
+    getSmsTemplates()
 }
 
 function closeDetails() {
     selectedDebtor.value = null
 }
 
+function togglePaymentBlock() {
+    isPaymentBlockOpen.value = !isPaymentBlockOpen.value
+}
+
+function toggleSmsBlock() {
+    isSmsBlockOpen.value = !isSmsBlockOpen.value
+}
+
+function checkFieldsPayment() {
+    if (!paymentSum.value || paymentSum.value <= 0) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Сумма незаполнена или равна 0',
+            type: 'danger'
+        })
+        return false
+    }
+
+    if (!paymentCurrency.value) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Валюта незаполнена',
+            type: 'danger'
+        })
+        return false
+    }
+
+    if (!selectedDebtor.value?.order) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Не найден номер договора для оплаты',
+            type: 'danger'
+        })
+        return false
+    }
+
+    if (!paymentBase.value) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Выберите основание оплаты',
+            type: 'danger'
+        })
+        return false
+    }
+
+    return true
+}
+
+function setSelectedTemplate(id: string) {
+    const template = smsTemplates.value.find(t => t.id.toString() === id)
+    if (template) {
+        smsForm.value.message = template.text
+    }
+}
+
+function onTemplateChange(event: Event) {
+    const target = event.target as HTMLSelectElement | null
+    if (!target) return
+    setSelectedTemplate(target.value)
+}
+
+function getSmsTemplates() {
+    if (!selectedDebtor.value) return
+
+    axios.get(selectedDebtor.value.serverLink + '/api/sms-templates', {
+        headers: {
+            Authorization: 'Basic ' + selectedDebtor.value.serverToken
+        }
+    })
+        .then(res => {
+            smsTemplates.value = Array.isArray(res.data) ? res.data : []
+        })
+        .catch(() => {
+            smsTemplates.value = []
+        })
+}
+
+function sendSMS() {
+    if (!selectedDebtor.value) return
+
+    if (!smsForm.value.phone || !smsForm.value.message) {
+        toasterStore.add({
+            title: 'Ошибка',
+            descr: 'Заполните телефон и текст сообщения',
+            type: 'danger'
+        })
+        return
+    }
+
+    loaderStore.isActive = true
+    axios.post(selectedDebtor.value.serverLink + '/api/sms', smsForm.value, {
+        headers: {
+            Authorization: 'Basic ' + selectedDebtor.value.serverToken
+        }
+    })
+        .then(() => {
+            toasterStore.add({
+                title: 'Успех',
+                descr: 'SMS успешно отправлено',
+                type: 'success'
+            })
+        })
+        .catch(err => toasterStore.add({
+            title: err?.code || 'Ошибка',
+            descr: err?.message || 'Не удалось отправить SMS',
+            type: 'danger'
+        }))
+        .finally(() => {
+            loaderStore.isActive = false
+        })
+}
+
+function createPaymentFromModal() {
+    if (!selectedDebtor.value || !checkFieldsPayment()) {
+        return
+    }
+
+    loaderStore.isActive = true
+    axios.post(selectedDebtor.value.serverLink + '/api/income', {
+        id: null,
+        order: selectedDebtor.value.order,
+        date: paymentDate.value ? new Date(paymentDate.value).toISOString() : new Date().toISOString(),
+        sum: paymentSum.value,
+        currency: paymentCurrency.value,
+        base: paymentBase.value,
+        client: selectedDebtor.value.client
+    }, {
+        headers: {
+            Authorization: 'Basic ' + selectedDebtor.value.serverToken
+        }
+    })
+        .then(res => {
+            paymentSum.value = 0
+            paymentBase.value = ''
+
+            const blobData = atob(res?.data?.bill || '')
+            if (blobData) {
+                const uintArray = new Uint8Array(blobData.length)
+                for (let i = 0; i < blobData.length; i++) {
+                    uintArray[i] = blobData.charCodeAt(i)
+                }
+
+                const blob = new Blob([uintArray], { type: 'application/pdf' })
+                const pdfUrl = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = pdfUrl
+                a.style.display = 'none'
+                a.download = (res?.data?.name || 'bill') + '.pdf'
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(pdfUrl)
+            }
+
+            loadReport()
+            toasterStore.add({
+                title: 'Успех',
+                descr: 'Оплата успешно добавлена',
+                type: 'success'
+            })
+        })
+        .catch(err => toasterStore.add({
+            title: err?.code || 'Ошибка',
+            descr: err?.message || 'Не удалось создать оплату',
+            type: 'danger'
+        }))
+        .finally(() => {
+            loaderStore.isActive = false
+        })
+}
+
+function onServerChange() {
+    if (!selectedServer.value) {
+        return
+    }
+
+    if (!clientOptions.value.includes(selectedClient.value)) {
+        selectedClient.value = ''
+    }
+}
+
+function clearFilters() {
+    selectedServer.value = ''
+    selectedClient.value = ''
+    clientNameSearch.value = ''
+    phoneSearch.value = ''
+}
+
 function downloadExcel() {
-    if (!debtors.value.length) {
+    if (!filteredDebtors.value.length) {
         toasterStore.add({
             title: 'Ошибка',
             descr: 'Нет данных для выгрузки',
@@ -318,8 +627,9 @@ function downloadExcel() {
         return
     }
 
-    const exportRows = debtors.value.map(item => ({
+    const exportRows = filteredDebtors.value.map(item => ({
         Клиент: item.clientName,
+        Квартира: item.apartmentInfo,
         Телефон: item.phone,
         'Дата последней оплаты': formatDate(item.lastPaymentDate),
         'Дней просрочки': item.overdueDays,
@@ -348,6 +658,7 @@ async function loadReport() {
     try {
         const responses = await Promise.all(
             servers.map(server => axios.get(server.link + '/api/clients-payments-report', {
+            // servers.map(server => axios.get(indexStore.apiHref + '/api/clients-payments-report', {
                 headers: {
                     Authorization: 'Basic ' + server.token
                 }
@@ -355,10 +666,11 @@ async function loadReport() {
         )
 
         const rows = responses.flatMap((response, responseIndex) => {
-            const serverLabel = getServerLabel(servers[responseIndex].link)
+            const serverInfo = servers[responseIndex]
+            const serverLabel = getServerLabel(serverInfo.link)
             const data = Array.isArray(response.data) ? response.data : []
             return data
-                .map((item, index) => mapDebtor(item, serverLabel, index))
+                .map((item, index) => mapDebtor(item, serverLabel, serverInfo.link, serverInfo.token, index))
                 .filter((row): row is DebtorRow => Boolean(row))
         }).sort((a, b) => b.overdueDays - a.overdueDays)
 
@@ -401,12 +713,33 @@ main.ip-main
                 h4 Оплачено
                 p.summary-value.success {{ formatMoney(totalPaidAmount) }}
 
+    section.report-filters
+        .ip-container.filters-grid
+            .ip-filter.ip-dfw
+                label(for="serverFilter") Сервер
+                select#serverFilter(v-model="selectedServer" @change="onServerChange")
+                    option(value="") Все серверы
+                    option(v-for="server in serverOptions" :key="server" :value="server") {{ server }}
+            .ip-filter.ip-dfw
+                label(for="clientFilter") Клиент
+                select#clientFilter(v-model="selectedClient")
+                    option(value="") Все клиенты
+                    option(v-for="client in clientOptions" :key="client" :value="client") {{ client }}
+            .ip-filter.ip-dfw
+                label(for="clientNameSearch") Поиск по имени клиента
+                input#clientNameSearch(type="text" v-model="clientNameSearch" placeholder="Введите имя клиента")
+            .ip-filter.ip-dfw
+                label(for="phoneSearch") Поиск по номеру
+                input#phoneSearch(type="text" v-model="phoneSearch" placeholder="Введите номер")
+            .ip-filter.ip-dfw
+                button.ip-btn.ip-btn_info(type="button" @click="clearFilters") Сбросить
+
     section.ip-list
         .ip-container.ip-dfw
             EasyDataTable.report-table(
-                v-if="debtors.length"
+                v-if="filteredDebtors.length"
                 :headers="headers"
-                :items="debtors"
+                :items="filteredDebtors"
                 alternating
                 buttons-pagination
                 border-cell
@@ -423,6 +756,8 @@ main.ip-main
                     span {{ formatDate(item.lastPaymentDate) }}
                 template(#item-overdueDays="item")
                     span.overdue-badge(:class="{ danger: item.overdueDays > 0 }") {{ item.overdueDays }}
+                template(#item-overdueUnpaidCount="item")
+                    span.overdue-badge(:class="{ danger: item.overdueUnpaidCount > 0 }") {{ item.overdueUnpaidCount }}
                 template(#item-nextPaymentDate="item")
                     span {{ formatDate(item.nextPaymentDate) }}
                 template(#item-paymentState="item")
@@ -453,6 +788,53 @@ main.ip-main
                 .meta-item
                     strong Просрочка:
                     span {{ selectedDebtor.overdueDays }} дн.
+                .meta-item
+                    strong Квартира:
+                    span {{ selectedDebtor.apartmentInfo }}
+            .report-modal__actions
+                .action-card
+                    .action-card__header
+                        h4 Оплата
+                        button.action-toggle(type="button" @click="togglePaymentBlock") {{ isPaymentBlockOpen ? 'Свернуть' : 'Развернуть' }}
+                    .action-card__content(v-if="isPaymentBlockOpen")
+                        .action-grid
+                            .ip-inp.ip-dfw
+                                label Сумма
+                                input(type="number" v-model="paymentSum")
+                            .ip-inp.ip-dfw
+                                label Валюта
+                                select(v-model="paymentCurrency")
+                                    option(v-for="currency in currencies" :key="currency.code" :value="currency") {{ currency.name }}
+                            .ip-inp.ip-dfw
+                                label Основание
+                                select(v-model="paymentBase")
+                                    option(value="" disabled) Выберите основание
+                                    option(v-for="option in paymentBaseOptions" :key="option.value" :value="option.value") {{ option.label }}
+                            .ip-inp.ip-dfw
+                                label Дата
+                                input(type="date" v-model="paymentDate")
+                        .action-footer
+                            button.ip-btn(type="button" @click="createPaymentFromModal") Добавить оплату
+
+                .action-card
+                    .action-card__header
+                        h4 SMS
+                        button.action-toggle(type="button" @click="toggleSmsBlock") {{ isSmsBlockOpen ? 'Свернуть' : 'Развернуть' }}
+                    .action-card__content(v-if="isSmsBlockOpen")
+                        .action-grid
+                            .ip-inp.ip-dfw
+                                label Телефон
+                                input(type="text" v-model="smsForm.phone" placeholder="Номер телефона")
+                            .ip-inp.ip-dfw
+                                label Шаблон
+                                select(@change="onTemplateChange")
+                                    option(value="" disabled selected) Выберите шаблон
+                                    option(v-for="template in smsTemplates" :value="template.id" :key="template.id") {{ template.name }}
+                            .ip-inp.ip-dfw.wide
+                                label Сообщение
+                                textarea(rows="4" v-model="smsForm.message" placeholder="Введите сообщение")
+                        .action-footer
+                            button.ip-btn.ip-btn_info(type="button" @click="sendSMS") Отправить SMS
             PaymentSchedule(
                 :plannedPayments="selectedDebtor.plan"
                 :actualPayments="selectedDebtor.actual"
@@ -467,6 +849,45 @@ main.ip-main
 
 .report-summary {
     margin-bottom: 16px;
+}
+
+.report-filters {
+    margin-bottom: 16px;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    align-items: end;
+
+    .ip-filter {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+
+        label {
+            font-size: 13px;
+            color: #667085;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            height: 38px;
+            padding: 0 10px;
+            outline: none;
+            background: #fff;
+        }
+
+        .ip-btn {
+            width: 100%;
+            height: 38px;
+        }
+    }
 }
 
 .summary-grid {
@@ -647,6 +1068,88 @@ main.ip-main
     padding: 8px 12px;
 }
 
+.report-modal__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.action-card {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 12px;
+
+    .action-card__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .action-card__content {
+        margin-top: 10px;
+    }
+
+    h4 {
+        margin: 0;
+    }
+}
+
+.action-toggle {
+    border: none;
+    background: #e9efff;
+    color: #2f4cc8;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+
+    .ip-inp {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        label {
+            font-size: 13px;
+            color: #667085;
+            font-weight: 600;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 8px 10px;
+            background: #fff;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        &.wide {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+.action-footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
 :deep(.vue3-easy-data-table__main) {
     cursor: pointer;
 }
@@ -663,6 +1166,14 @@ main.ip-main
 
     .report-modal__meta {
         flex-direction: column;
+    }
+
+    .report-modal__actions {
+        grid-template-columns: 1fr;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
