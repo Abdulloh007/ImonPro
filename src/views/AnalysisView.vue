@@ -496,7 +496,7 @@ main.ip-main
     gap: 6px;
 
     &__label {
-        color: #6b6b6b;
+        color: var(--color-muted);
     }
 }
 
@@ -515,7 +515,7 @@ main.ip-main
 }
 
 .ip-chart {
-    background: #f5f5f5;
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 12px;
 
@@ -526,6 +526,7 @@ main.ip-main
     &__title {
         font-weight: 600;
         margin-bottom: 12px;
+        color: var(--color-heading);
     }
 
     &__canvas {
@@ -536,18 +537,19 @@ main.ip-main
 
 .ip-card {
     padding: 12px;
-    background: #f5f5f5;
+    background: var(--color-surface);
     border-radius: 8px;
 
     &__title {
         font-size: 14px;
-        color: #6b6b6b;
+        color: var(--color-muted);
         margin-bottom: 6px;
     }
 
     &__value {
         font-size: 22px;
         font-weight: 700;
+        color: var(--color-text);
     }
 }
 
@@ -574,22 +576,28 @@ main.ip-main
             position: sticky;
             top: 0;
             z-index: 10;
-            box-shadow: 0 1px 6px -3px #000;
+            box-shadow: 0 1px 6px -3px var(--color-border);
+
+            .ip-t__data {
+                background-color: var(--color-surface-alt) !important;
+                color: var(--color-heading);
+            }
         }
 
         &:nth-child(odd) {
             .ip-t__data {
-                background-color: #f7b487;
+                background-color: var(--color-surface-alt);
             }
         }
 
         .ip-t__data {
             width: 100%;
             padding: 10px;
-            background-color: #D9D9D9;
+            background-color: var(--color-surface);
             display: flex;
             justify-content: center;
             align-items: center;
+            color: var(--color-text);
 
             &:first-child {
                 justify-content: flex-start;

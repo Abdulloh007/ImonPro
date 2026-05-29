@@ -42,7 +42,7 @@ function setServer(project: any) {
         }
 
         &:hover {
-            background-color: rgb(187 187 187 / 60%);
+            background-color: var(--color-surface-alt);
             cursor: pointer;
 
             img {
@@ -66,7 +66,7 @@ function setServer(project: any) {
         h4 {
             font-size: 24px;
             font-weight: 600;
-            color: black;
+            color: var(--color-text);
         }
     }
 }

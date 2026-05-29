@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, toRefs } from 'vue'
 
-interface Plan { id?: number; date: string; sum: number }
-interface Actual { id?: number; date: string; sum: number }
+interface Plan { id?: number; date: string; sum: number, currency: string }
+interface Actual { id?: number; date: string; sum: number, sum_equal?: number, exchange_rate?: number, currency: string }
 interface ActualQueueItem extends Actual {
     remaining: number
 }
@@ -36,21 +36,29 @@ const endOfDay = (d: Date | string) => {
     return dd
 }
 
+const getPaymentAmount = (payment: any) => {
+    const value = payment?.sum_equal ?? payment?.sum
+    if (value === undefined || value === null || value === '') return 0
+    const normalized = String(value).trim().replace(/\s+/g, '').replace(',', '.')
+    const parsed = Number(normalized)
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
 const rows = computed(() => {
     const plans: Plan[] = (plannedPayments?.value || []).slice().sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
     const actuals: Actual[] = (actualPayments?.value || []).slice().sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
     const cumActualByDate = (dateStr: string) => {
         const dEnd = endOfDay(dateStr).getTime()
-        return actuals.reduce((s: number, a: any) => (new Date(a.date).getTime() <= dEnd ? s + Number(a.sum) : s), 0)
+        return actuals.reduce((s: number, a: any) => (new Date(a.date).getTime() <= dEnd ? s + getPaymentAmount(a) : s), 0)
     }
 
     const cumActualBeforeDate = (dateStr: string) => {
         const dStart = startOfDay(dateStr).getTime()
-        return actuals.reduce((s: number, a: any) => (new Date(a.date).getTime() < dStart ? s + Number(a.sum) : s), 0)
+        return actuals.reduce((s: number, a: any) => (new Date(a.date).getTime() < dStart ? s + getPaymentAmount(a) : s), 0)
     }
 
-    const actualQueue: ActualQueueItem[] = actuals.map(a => ({ ...a, remaining: Number(a.sum || 0) }))
+    const actualQueue: ActualQueueItem[] = actuals.map(a => ({ ...a, remaining: getPaymentAmount(a) }))
 
     const result: any[] = []
     let plannedCumulative = 0
@@ -375,7 +383,9 @@ const fixedTo = (v: any) => {
                     tr(v-for="(a, i) in actualPayments" :key="a.id || i")
                         td.idx {{ i + 1 }}
                         td.date {{ new Date(a.date).toLocaleDateString() }}
-                        td.text-right {{ fixedTo(a.sum) }} {{ currencySymbolSafe }}
+                        td.text-right {{ fixedTo(a.sum) }} {{ a.currency || currencySymbolSafe }} 
+                            u
+                                i(v-if="a.sum_equal !== undefined && a.sum_equal !== null && a.sum_equal !== a.sum") - {{ fixedTo(a.sum_equal) + "$" }} {{a.exchange_rate ? ' x ' + a.exchange_rate : ''}}
                         td {{ a.base || a.method || '-' }}
 </template>
 

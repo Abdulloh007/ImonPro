@@ -18,6 +18,8 @@ interface Currency {
 interface ActualPayment {
     id?: number | string
     sum: number
+    sum_equal: number 
+    exchange_rate: number
     date: string
     currency?: any
     base?: string
@@ -42,6 +44,7 @@ interface ClientInfo {
     apartment?: string | number
     apartment_type?: string
     another_phone?: boolean
+    apartment_square?: string | number
 }
 
 interface ClientPaymentsReportItem {
@@ -165,6 +168,30 @@ const totalDebtors = computed(() => filteredDebtors.value.length)
 const totalRemainingAmount = computed(() => filteredDebtors.value.reduce((sum, item) => sum + Number(item.totalRemaining || 0), 0))
 const totalPaidAmount = computed(() => filteredDebtors.value.reduce((sum, item) => sum + Number(item.totalPaid || 0), 0))
 
+const selectedMonth = ref<string>(new Date().toISOString().slice(0, 7)) // YYYY-MM
+
+function isDateInMonth(dateStr: string | undefined | null, monthStr: string) {
+    if (!dateStr) return false
+    const d = new Date(dateStr)
+    if (Number.isNaN(d.getTime())) return false
+    const [y, m] = monthStr.split('-').map(Number)
+    return d.getFullYear() === y && (d.getMonth() + 1) === m
+}
+
+const monthlyPaidAmount = computed(() => {
+    const month = selectedMonth.value
+    if (!month) return 0
+    return debtors.value.reduce((sum, debtor) => {
+        const payments = Array.isArray(debtor.actual) ? debtor.actual : []
+        const monthFiltered = payments.reduce((s, p) => {
+            const value = (p as any).sum_equal ?? (p as any).sum ?? 0
+            return s + (isDateInMonth(p.date, month) ? parseNumber(value) : 0)
+        }, 0)
+        
+        return sum + monthFiltered
+    }, 0)
+})
+
 const headers: Header[] = [
     { text: 'Клиент', value: 'clientName', sortable: true },
     { text: 'Квартира', value: 'apartmentInfo', sortable: true },
@@ -177,10 +204,10 @@ const headers: Header[] = [
 ]
 
 const paymentBaseOptions = computed(() => {
-    const plans = (selectedDebtor.value?.plan || []).filter(plan => Number(plan.paid || 0) < Number(plan.sum || 0))
+    const plans = (selectedDebtor.value?.plan || []).filter(plan => parseNumber(plan.paid || 0) < parseNumber(plan.sum || 0))
     return plans.map((plan, index) => {
         const date = formatDate(plan.date)
-        const sum = formatMoney(Number(plan.sum || 0))
+        const sum = formatMoney(parseNumber(plan.sum || 0))
         const label = `${index + 1}. ${date} - ${sum}`
         return {
             label,
@@ -221,13 +248,22 @@ function formatMoney(value?: number) {
     })
 }
 
+function parseNumber(value: any) {
+    if (value === undefined || value === null || value === '') return 0
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0
+    const normalized = String(value).trim().replace(/\s+/g, '').replace(',', '.')
+    const parsed = Number(normalized)
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
 function formatApartmentInfo(client?: ClientInfo) {
     const block = client?.block ? `Блок ${client.block}` : 'Блок -'
     const floor = client?.float ? `Этаж ${client.float}` : 'Этаж -'
     const apartmentType = client?.apartment_type || 'Тип -'
     const apartment = client?.apartment ? `Кв. ${client.apartment}` : 'Кв. -'
+    const apartmentSquare = client?.apartment_square ? `(${client.apartment_square} м²)` : ''
 
-    return `${block} + ${floor} + ${apartmentType} + ${apartment}`
+    return `${block} + ${floor} + ${apartmentType} + ${apartment} + ${apartmentSquare}`
 }
 
 function getServers() {
@@ -277,23 +313,24 @@ function buildPaymentRows(plans: PlanPayment[], actuals: ActualPayment[]) {
 
     const cumActualByDate = (dateStr: string) => {
         const dEnd = endOfDay(dateStr).getTime()
-        return sortedActuals.reduce((s: number, a: any) => (new Date(a.date).getTime() <= dEnd ? s + Number(a.sum) : s), 0)
+        return sortedActuals.reduce((s: number, a: any) => (new Date(a.date).getTime() <= dEnd ? s + parseNumber(a.sum_equal) : s), 0)
     }
 
     const cumActualBeforeDate = (dateStr: string) => {
         const dStart = startOfDay(dateStr).getTime()
-        return sortedActuals.reduce((s: number, a: any) => (new Date(a.date).getTime() < dStart ? s + Number(a.sum) : s), 0)
+        return sortedActuals.reduce((s: number, a: any) => (new Date(a.date).getTime() < dStart ? s + parseNumber(a.sum_equal) : s), 0)
     }
 
-    const actualQueue = sortedActuals.map(a => ({ ...a, remaining: Number(a.sum || 0) }))
+    const actualQueue = sortedActuals.map(a => ({ ...a, remaining: parseNumber(a.sum_equal) }))
 
     const result: PaymentRow[] = []
     let plannedCumulative = 0
 
     for (const p of sortedPlans) {
-        plannedCumulative += Number(p.sum)
+        const planSum = parseNumber(p.sum)
+        plannedCumulative += planSum
 
-        let toFill = Number(p.sum || 0)
+        let toFill = planSum
         let paidForThisPlan = 0
         let lastUsedDate: string | null = null
 
@@ -315,8 +352,8 @@ function buildPaymentRows(plans: PlanPayment[], actuals: ActualPayment[]) {
             }
         }
 
-        const remaining = Math.max(0, Number(p.sum) - paidForThisPlan)
-        const progress = Number(p.sum) > 0 ? Math.round((paidForThisPlan / Number(p.sum)) * 100) : 0
+        const remaining = Math.max(0, planSum - paidForThisPlan)
+        const progress = planSum > 0 ? Math.round((paidForThisPlan / planSum) * 100) : 0
 
         const plannedDate = startOfDay(new Date(p.date))
         let overdueDays = 0
@@ -343,7 +380,7 @@ function buildPaymentRows(plans: PlanPayment[], actuals: ActualPayment[]) {
         result.push({
             id: p.id,
             date: p.date,
-            planSum: Number(p.sum),
+            planSum,
             paidForThisPlan,
             remaining,
             progress,
@@ -366,12 +403,10 @@ function mapDebtor(item: ClientPaymentsReportItem, serverLabel: string, serverLi
 
     const paymentRows = buildPaymentRows(plans, actuals)
     const overdueRows = paymentRows.filter(row => row.status === 'overdue' && row.remaining > 0)
+    const unpaidRows = paymentRows.filter(row => row.remaining > 0)
 
-    if (overdueRows.length === 0) {
-        return null
-    }
-
-    const firstOverdueRow = overdueRows[0]
+    const firstOverdueRow = overdueRows[0] || null
+    const nextPaymentRow = firstOverdueRow || unpaidRows[0] || null
     const lastPayment = actuals.length > 0 ? actuals[actuals.length - 1] : null
     const totalPaid = paymentRows.reduce((sum, row) => sum + Number(row.paidForThisPlan || 0), 0)
     const totalRemaining = paymentRows.reduce((sum, row) => sum + Number(row.remaining || 0), 0)
@@ -385,9 +420,9 @@ function mapDebtor(item: ClientPaymentsReportItem, serverLabel: string, serverLi
         apartmentInfo: formatApartmentInfo(item.client),
         phone: item.client?.phone || '—',
         lastPaymentDate: lastPayment?.date || null,
-        overdueDays: Number(firstOverdueRow.overdueDays || 0),
+        overdueDays: Number(firstOverdueRow?.overdueDays || 0),
         overdueUnpaidCount: overdueRows.length,
-        nextPaymentDate: firstOverdueRow.date || null,
+        nextPaymentDate: nextPaymentRow?.date || null,
         totalPaid,
         totalRemaining,
         totalPlanned,
@@ -668,7 +703,12 @@ async function loadReport() {
         const rows = responses.flatMap((response, responseIndex) => {
             const serverInfo = servers[responseIndex]
             const serverLabel = getServerLabel(serverInfo.link)
-            const data = Array.isArray(response.data) ? response.data : []
+            const responseData = response.data
+            const data: ClientPaymentsReportItem[] = Array.isArray(responseData)
+                ? responseData
+                : Array.isArray(responseData?.data)
+                    ? responseData.data
+                    : []
             return data
                 .map((item, index) => mapDebtor(item, serverLabel, serverInfo.link, serverInfo.token, index))
                 .filter((row): row is DebtorRow => Boolean(row))
@@ -712,6 +752,11 @@ main.ip-main
             .summary-card
                 h4 Оплачено
                 p.summary-value.success {{ formatMoney(totalPaidAmount) }}
+            .summary-card
+                h4 Оплачено за месяц
+                .month-row
+                    input(type="month" v-model="selectedMonth")
+                p.summary-value {{ formatMoney(monthlyPaidAmount) }}
 
     section.report-filters
         .ip-container.filters-grid
@@ -743,7 +788,7 @@ main.ip-main
                 alternating
                 buttons-pagination
                 border-cell
-                :rows-per-page="10"
+                :rows-per-page="100"
                 sort-by="overdueDays"
                 sort-type="desc"
                 @click-row="openDetails"
@@ -868,19 +913,20 @@ main.ip-main
 
         label {
             font-size: 13px;
-            color: #667085;
+            color: var(--color-muted);
             font-weight: 600;
         }
 
         input,
         select {
             width: 100%;
-            border: 1px solid #d0d5dd;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             height: 38px;
             padding: 0 10px;
             outline: none;
-            background: #fff;
+            background: var(--color-surface);
+            color: var(--color-text);
         }
 
         .ip-btn {
@@ -897,15 +943,15 @@ main.ip-main
 }
 
 .summary-card {
-    background: #fff;
+    background: var(--color-surface);
     border-radius: 12px;
     padding: 14px 16px;
-    box-shadow: 0 1px 6px -3px #000;
+    box-shadow: 0 1px 6px -3px var(--color-border);
 
     h4 {
         margin: 0 0 8px;
         font-size: 14px;
-        color: #667085;
+        color: var(--color-muted);
     }
 }
 
@@ -922,7 +968,7 @@ main.ip-main
 .report-total {
     padding: 8px 14px;
     border-radius: 10px;
-    background: #f4f4f4;
+    background: var(--color-surface-alt);
     font-weight: 600;
 }
 
@@ -932,7 +978,7 @@ main.ip-main
     gap: 4px;
 
     small {
-        color: #667085;
+        color: var(--color-muted);
     }
 }
 
@@ -943,7 +989,7 @@ main.ip-main
     min-width: 52px;
     padding: 4px 8px;
     border-radius: 999px;
-    background: #f2f4f7;
+    background: var(--color-surface-alt);
     font-weight: 700;
 
     &.danger {
@@ -972,7 +1018,7 @@ main.ip-main
         content: '';
         position: absolute;
         inset: 8px;
-        background: #fff;
+        background: var(--color-surface);
         border-radius: 50%;
     }
 
@@ -981,20 +1027,21 @@ main.ip-main
         z-index: 1;
         font-size: 10px;
         font-weight: 700;
+        color: var(--color-text);
     }
 }
 
 .pie-text {
     font-size: 12px;
-    color: #344054;
+    color: var(--color-text);
 }
 
 .ip-empty {
     width: 100%;
     padding: 40px 20px;
     text-align: center;
-    color: #666;
-    background: #f8f8f8;
+    color: var(--color-muted);
+    background: var(--color-surface);
     border-radius: 12px;
 }
 
@@ -1019,7 +1066,7 @@ main.ip-main
     width: min(1200px, calc(100vw - 24px));
     max-height: calc(100vh - 24px);
     overflow: auto;
-    background: #fff;
+    background: var(--color-surface);
     border-radius: 16px;
     padding: 16px;
 }
@@ -1039,13 +1086,13 @@ main.ip-main
 
     p {
         margin: 0;
-        color: #667085;
+        color: var(--color-muted);
     }
 }
 
 .report-modal__close {
     border: none;
-    background: #f2f4f7;
+    background: var(--color-surface-alt);
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -1063,7 +1110,7 @@ main.ip-main
 .meta-item {
     display: flex;
     gap: 6px;
-    background: #f9fafb;
+    background: var(--color-surface);
     border-radius: 10px;
     padding: 8px 12px;
 }
@@ -1076,7 +1123,7 @@ main.ip-main
 }
 
 .action-card {
-    background: #f9fafb;
+    background: var(--color-surface);
     border-radius: 12px;
     padding: 12px;
 
@@ -1098,7 +1145,7 @@ main.ip-main
 
 .action-toggle {
     border: none;
-    background: #e9efff;
+    background: var(--color-surface-alt);
     color: #2f4cc8;
     padding: 6px 10px;
     border-radius: 8px;
@@ -1118,7 +1165,7 @@ main.ip-main
 
         label {
             font-size: 13px;
-            color: #667085;
+            color: var(--color-muted);
             font-weight: 600;
         }
 
@@ -1126,10 +1173,11 @@ main.ip-main
         select,
         textarea {
             width: 100%;
-            border: 1px solid #d0d5dd;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             padding: 8px 10px;
-            background: #fff;
+            background: var(--color-surface);
+            color: var(--color-text);
             outline: none;
         }
 

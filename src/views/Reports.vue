@@ -38,17 +38,19 @@ main.ip-main
 
     .ip-list__item {
         padding: 10px 20px;
-        background-color: #f5f5f5;
+        background-color: var(--color-surface);
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        color: var(--color-text);
 
         &:hover {
-            background-color: #e0e0e0;
+            background-color: var(--color-surface-alt);
         }
 
         & a {
             display: block;
+            color: inherit;
         }
     }
 }

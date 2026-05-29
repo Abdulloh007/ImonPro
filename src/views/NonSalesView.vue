@@ -191,7 +191,7 @@ main.ip-main
             position: sticky;
             top: 0;
             z-index: 10;
-            box-shadow: 0 1px 6px -3px #000;
+            box-shadow: 0 1px 6px -3px var(--color-border);
         }
 
         &.ip-footer {
@@ -200,7 +200,7 @@ main.ip-main
 
         &:nth-child(odd) {
             .ip-t__data {
-                background-color: #f7b487;
+                background-color: var(--color-surface);
             }
         }
 
@@ -209,7 +209,8 @@ main.ip-main
             width: 100%;
             justify-content: center;
             align-items: center;
-            background-color: #D9D9D9;
+            background-color: var(--color-surface);
+            color: var(--color-text);
 
             &.reserved {
                 background-color: #FAF2A0;
@@ -226,7 +227,7 @@ main.ip-main
                 transition: all .2s ease;
 
                 &:hover {
-                    background-color: rgb(241 200 90 / 60%);
+                    background-color: var(--color-surface-alt);
                 }
             }
 
@@ -235,7 +236,7 @@ main.ip-main
                 left: 0;
                 top: 0;
                 z-index: 9;
-                box-shadow: 1px 0 6px -3px #000;
+                box-shadow: 1px 0 6px -3px var(--color-border);
                 min-width: 320px;
                 justify-content: flex-start;
             }
@@ -282,13 +283,15 @@ main.ip-main
         width: 19%;
         max-width: 200px;
         padding: 10px;
-        background-color: #f5f5f5;
+        background-color: var(--color-surface);
         border-radius: 5px;
+        color: var(--color-text);
     }
 
     &__title {
         font-size: 18px;
         margin-bottom: 5px;
+        color: var(--color-muted);
     }
 
     &__value {

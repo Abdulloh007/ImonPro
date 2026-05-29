@@ -3,6 +3,7 @@ import { ref } from 'vue';
 
 defineProps<{
     collapsed: boolean
+    theme: 'light' | 'dark'
 }>()
 
 const role = ref<any>({
@@ -13,6 +14,7 @@ role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":
 
 const emit = defineEmits<{
     (e: 'toggle-sidebar'): void
+    (e: 'toggle-theme'): void
 }>()
 
 function toggleSidebar() {
@@ -29,6 +31,20 @@ section.ip-navigation
                 path(d="M4 12H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round")
                 path(d="M4 17H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round")
         RouterLink.ip-topbar__brand(to="/") ImonPro
+        button.ip-topbar__theme(type="button" @click="emit('toggle-theme')")
+            svg(v-if="theme === 'dark'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg")
+                path(d="M21 12.79C20.89 12.79 20.78 12.8 20.68 12.8C18.52 12.94 16.6 14.35 15.56 16.21C14.51 18.07 14.43 20.31 15.35 22.28C15.3 22.29 15.26 22.3 15.21 22.31C10.88 23.25 6.09 20.24 4.86 15.76C3.63 11.28 5.64 6.54 9.67 4.62C13.7 2.7 18.67 3.82 21 7.28C21.1 7.42 21.16 7.58 21.16 7.76C21.16 8.94 20.24 10.04 19.02 10.31C19.01 10.49 21 12.79 21 12.79Z" fill="currentColor")
+            svg(v-else viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg")
+                path(d="M12 4.5V2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M12 22V19.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M4.22 4.22L5.64 5.64" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M18.36 18.36L19.78 19.78" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M2 12H4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M19.5 12H22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M4.22 19.78L5.64 18.36" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+                path(d="M12 18.5C15.5899 18.5 18.5 15.5899 18.5 12C18.5 8.41015 15.5899 5.5 12 5.5C8.41015 5.5 5.5 8.41015 5.5 12C5.5 15.5899 8.41015 18.5 12 18.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round")
+            span {{ theme === 'dark' ? 'Светлая' : 'Тёмная' }}
 
     aside.ip-sidebar(:class="{ collapsed }")
         nav.ip-menu
@@ -67,16 +83,17 @@ section.ip-navigation
     align-items: center;
     gap: 14px;
     padding: 0 18px;
-    background: #fff;
-    box-shadow: 0 1px 6px -3px #000;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1px 6px -3px var(--color-border);
 
     &__toggle {
         width: 40px;
         height: 40px;
         border: none;
         border-radius: 10px;
-        background: rgba(128, 128, 128, 0.14);
-        color: #666;
+        background: var(--color-surface-alt);
+        color: var(--color-text);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -88,8 +105,33 @@ section.ip-navigation
         }
     }
 
+    &__theme {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        border-radius: 10px;
+        background: rgba(128, 128, 128, 0.12);
+        color: var(--color-text);
+        padding: 0 14px;
+        min-height: 40px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        &:hover {
+            background: rgba(128, 128, 128, 0.18);
+        }
+    }
+
     &__brand {
-        color: #363636;
+        color: var(--color-heading);
         text-decoration: none;
         font-size: 18px;
         font-weight: 700;
@@ -104,8 +146,8 @@ section.ip-navigation
     bottom: 0;
     width: 230px;
     z-index: 20;
-    background: #fff;
-    box-shadow: 0 1px 8px -4px #000;
+    background: var(--color-surface);
+    box-shadow: 0 1px 8px -4px var(--color-border);
     transition: width 0.25s ease, transform 0.25s ease;
     overflow: hidden;
 
@@ -138,7 +180,7 @@ section.ip-navigation
         gap: 10px;
         border-radius: 12px;
         text-decoration: none;
-        color: #808080;
+        color: var(--color-text);
         padding: 10px 12px;
         transition: all 0.2s ease;
 
@@ -151,7 +193,7 @@ section.ip-navigation
         &.router-link-active,
         &.router-link-exact-active {
             background: rgba(128, 128, 128, 0.16);
-            color: #555;
+            color: var(--color-heading);
         }
     }
 

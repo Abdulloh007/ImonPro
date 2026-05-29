@@ -41,7 +41,7 @@ main.ip-main
 
     &__item {
         padding: 1rem;
-        background-color: #E1E1E1;
+        background-color: var(--color-surface);
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -50,6 +50,7 @@ main.ip-main
 
         & a {
             display: block;
+            color: var(--color-text);
         }
 
         &:last-child {
@@ -57,7 +58,7 @@ main.ip-main
         }
 
         &:hover {
-            background-color: #D1D1D1;
+            background-color: var(--color-surface-alt);
         }
     }
 }

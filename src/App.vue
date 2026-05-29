@@ -13,6 +13,7 @@ const isIOS = Capacitor.getPlatform() === 'ios'
 const isAndroid = Capacitor.getPlatform() === 'android'
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 const isSidebarCollapsed = ref(windowWidth.value <= 768)
+const theme = ref<'light' | 'dark'>('light')
 const isMobile = computed(() => windowWidth.value <= 768)
 const showSidebarOverlay = computed(() => isMobile.value && !isSidebarCollapsed.value)
 
@@ -28,8 +29,26 @@ function closeSidebar() {
     isSidebarCollapsed.value = true
 }
 
+function setTheme(value: 'light' | 'dark') {
+    theme.value = value
+    document.documentElement.dataset.theme = value
+    localStorage.setItem('ip_theme', value)
+}
+
+function toggleTheme() {
+    setTheme(theme.value === 'dark' ? 'light' : 'dark')
+}
+
 onMounted(() => {
     window.addEventListener('resize', updateWindowWidth)
+    const savedTheme = localStorage.getItem('ip_theme')
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+        setTheme(savedTheme)
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme('dark')
+    } else {
+        setTheme('light')
+    }
 })
 
 onBeforeUnmount(() => {
@@ -40,7 +59,7 @@ onBeforeUnmount(() => {
 
 <template lang="pug">
 .ip-fake__statusbar(:class="{active: isIOS}")
-Navigation(:collapsed="isSidebarCollapsed" @toggle-sidebar="toggleSidebar")
+Navigation(:collapsed="isSidebarCollapsed" :theme="theme" @toggle-sidebar="toggleSidebar" @toggle-theme="toggleTheme")
 .ip-sidebar-overlay(v-if="showSidebarOverlay" @click="closeSidebar")
 .ip-layout(:class="{collapsed: isSidebarCollapsed}")
     RouterView

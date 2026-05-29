@@ -38,12 +38,36 @@
 
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
+  --color-muted: rgba(60, 60, 60, 0.66);
+  --color-muted-alt: rgba(60, 60, 60, 0.42);
+
+  --color-surface: var(--color-background-soft);
+  --color-surface-alt: var(--color-background-mute);
 
   --section-gap: 160px;
 }
 
+:root[data-theme="dark"] {
+  --color-background: var(--vt-c-black);
+  --color-background-soft: var(--vt-c-black-soft);
+  --color-background-mute: var(--vt-c-black-mute);
+
+  --color-border: var(--vt-c-divider-dark-2);
+  --color-border-hover: var(--vt-c-divider-dark-1);
+
+  --color-heading: var(--vt-c-text-dark-1);
+  --color-text: var(--vt-c-text-dark-2);
+  --color-muted: rgba(235, 235, 235, 0.64);
+  --color-muted-alt: rgba(235, 235, 235, 0.45);
+
+  --color-surface: #121212;
+  --color-surface-alt: #1d1d1d;
+
+  --ip-bg: rgba(214, 92, 16, 0.45);
+}
+
 @media (prefers-color-scheme: dark) {
-  /* :root {
+  :root:not([data-theme]) {
     --color-background: var(--vt-c-black);
     --color-background-soft: var(--vt-c-black-soft);
     --color-background-mute: var(--vt-c-black-mute);
@@ -53,7 +77,12 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
-  } */
+
+    --color-surface: #121212;
+    --color-surface-alt: #1d1d1d;
+
+    --ip-bg: rgba(214, 92, 16, 0.45);
+  }
 }
 
 *,
@@ -89,6 +118,65 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme="dark"] .ip-layout,
+:root[data-theme="dark"] .ip-container,
+:root[data-theme="dark"] section,
+:root[data-theme="dark"] .header,
+:root[data-theme="dark"] .ip-card,
+:root[data-theme="dark"] .summary-card,
+:root[data-theme="dark"] .action-card,
+:root[data-theme="dark"] .ip-empty,
+:root[data-theme="dark"] .report-modal__container,
+:root[data-theme="dark"] .meta-item,
+:root[data-theme="dark"] .report-total,
+:root[data-theme="dark"] .ip-modal__container,
+:root[data-theme="dark"] .ip-settings__item,
+:root[data-theme="dark"] .ip-settings__item a,
+:root[data-theme="dark"] .ip-modal__content .ip-inp input,
+:root[data-theme="dark"] .ip-modal__content .ip-inp textarea,
+:root[data-theme="dark"] .ip-modal__content .ip-inp select,
+:root[data-theme="dark"] .ip-filter input,
+:root[data-theme="dark"] .ip-filter select,
+:root[data-theme="dark"] .ip-inp input,
+:root[data-theme="dark"] .ip-inp textarea,
+:root[data-theme="dark"] .ip-inp select,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] table,
+:root[data-theme="dark"] thead,
+:root[data-theme="dark"] tbody,
+:root[data-theme="dark"] th,
+:root[data-theme="dark"] td,
+:root[data-theme="dark"] .ps-chart-large,
+:root[data-theme="dark"] .ps-chart-small,
+:root[data-theme="dark"] .ps-col,
+:root[data-theme="dark"] .ps-table th,
+:root[data-theme="dark"] .ps-table td,
+:root[data-theme="dark"] .ps-table tbody tr:hover,
+:root[data-theme="dark"] .ip-room-tabs .tab,
+:root[data-theme="dark"] .ip-room-tabs .tab.active,
+:root[data-theme="dark"] .context-menu,
+:root[data-theme="dark"] .context-menu__item,
+:root[data-theme="dark"] .modal,
+:root[data-theme="dark"] .modal__header {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+}
+
+:root[data-theme="dark"] table {
+  border-color: var(--color-border) !important;
+}
+
+:root[data-theme="dark"] .ip-modal__content .ip-inp label,
+:root[data-theme="dark"] .ip-filter label,
+:root[data-theme="dark"] .action-grid label,
+:root[data-theme="dark"] .report-modal__title p,
+:root[data-theme="dark"] .client-cell small {
+  color: var(--color-muted) !important;
 }
 
 a, input, button {

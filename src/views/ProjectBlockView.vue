@@ -309,15 +309,13 @@ main.ip-main
             position: sticky;
             top: 0;
             z-index: 10;
-            box-shadow: 0 1px 6px -3px #000;
-
-
+            box-shadow: 0 1px 6px -3px var(--color-border);
         }
 
         a.ip-t__data {
             line-break: anywhere;
-            background-color: #69cf4f;
-            color: #000;
+            background-color: var(--color-surface-alt);
+            color: var(--color-text);
         }
 
         .ip-t__data {
@@ -326,8 +324,8 @@ main.ip-main
             min-height: 100px;
             justify-content: center;
             align-items: center;
-            background-color: #d9d9d9;
-
+            background-color: var(--color-surface);
+            color: var(--color-text);
 
             &.reserved {
                 background-color: #faed62;
@@ -344,9 +342,8 @@ main.ip-main
                 transition: all .2s ease;
 
                 &:hover {
-                    // filter: brightness(0.95);
                     transform: scale(1.05);
-                    box-shadow: 0 0 10px -3px #141414;
+                    box-shadow: 0 0 10px -3px var(--color-border);
                     z-index: 1;
                 }
 
@@ -363,7 +360,7 @@ main.ip-main
                 left: 0;
                 top: 0;
                 z-index: 9;
-                box-shadow: 1px 0 6px -3px #000;
+                box-shadow: 1px 0 6px -3px var(--color-border);
                 justify-content: flex-start;
             }
 
@@ -381,18 +378,17 @@ main.ip-main
     align-items: center;
     justify-content: center;
     padding: 25px 20px;
-    background-color: #f9f9f9;
+    background-color: var(--color-surface);
     margin: 5px;
     cursor: pointer;
     transition: all .2s ease;
-    color: #151e50;
-    border: 1px solid #e1e1e1;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
 
     &:hover {
-        // filter: brightness(0.95);
         transform: scale(1.05);
-        box-shadow: 0 0 10px -3px #141414;
+        box-shadow: 0 0 10px -3px var(--color-border);
         z-index: 1;
     }
 
