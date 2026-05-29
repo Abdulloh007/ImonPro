@@ -192,6 +192,20 @@ const monthlyPaidAmount = computed(() => {
     }, 0)
 })
 
+const monthlyPlannedAmount = computed(() => {
+    const month = selectedMonth.value
+    if (!month) return 0
+    return debtors.value.reduce((sum, debtor) => {
+        const plans = Array.isArray(debtor.plan) ? debtor.plan : []
+        const monthFiltered = plans.reduce((s, p) => {
+            const value = (p as any).sum ?? 0
+            return s + (isDateInMonth(p.date, month) ? parseNumber(value) : 0)
+        }, 0)
+        
+        return sum + monthFiltered
+    }, 0)
+})
+
 const headers: Header[] = [
     { text: 'Клиент', value: 'clientName', sortable: true },
     { text: 'Квартира', value: 'apartmentInfo', sortable: true },
@@ -740,9 +754,11 @@ main.ip-main
                 h2.title Должники по оплатам
                 .bread-crumbs
                     RouterLink(to="/reports") Все отчеты
-            .right-slot.report-actions
+            .right-slot.report-actions.ip-dfw
                 .report-total Найдено: {{ totalDebtors }}
                 button.ip-btn.ip-btn_info(type="button" @click="downloadExcel") Excel
+                .month-row
+                    input(type="month" v-model="selectedMonth")
 
     section.report-summary
         .ip-container.summary-grid
@@ -753,10 +769,11 @@ main.ip-main
                 h4 Оплачено
                 p.summary-value.success {{ formatMoney(totalPaidAmount) }}
             .summary-card
+                h4 Запланировано за месяц
+                p.summary-value {{ formatMoney(monthlyPlannedAmount) }}
+            .summary-card
                 h4 Оплачено за месяц
-                .month-row
-                    input(type="month" v-model="selectedMonth")
-                p.summary-value {{ formatMoney(monthlyPaidAmount) }}
+                p.summary-value.success {{ formatMoney(monthlyPaidAmount) }}
 
     section.report-filters
         .ip-container.filters-grid
