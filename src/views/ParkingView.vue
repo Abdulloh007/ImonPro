@@ -16,7 +16,7 @@ const indexStore = useIndexStore()
 const parkingsSelectedlevel = ref<number>(-1)
 const parkingsLevels = ref<any[]>([])
 const parkings = ref([])
-const viewMode = ref('list')
+const viewMode = ref('plan')
 const isEditMode = ref(false)
 const draggedParking = ref<any>(null)
 const selectedParkings = ref<Set<number>>(new Set())
@@ -598,11 +598,11 @@ main.ip-main
         user-select: none;
 
         &.free {
-            box-shadow: inset 0 0 5px 2px #c8e6c9;
+            box-shadow: inset 0 0 5px 2px #8ceb8f;
         }
 
         &.occupied {
-            box-shadow: inset 0 0 5px 2px #ffcdd2;
+            box-shadow: inset 0 0 5px 2px #ff6171;
         }
 
         &.selected {

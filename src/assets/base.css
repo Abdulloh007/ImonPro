@@ -20,11 +20,11 @@
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 
-  --ip-primary: #D65C10;
-  --ip-secondary: #79AB33;
-  --ip-warn: #FAF2A0;
-  --ip-info: #B2E3F8;
-  --ip-bg: rgba(214, 92, 16, 0.6);
+  --ip-primary: #d6b881;
+  --ip-secondary: #d6915b;
+  --ip-warn: #e6e357;
+  --ip-info: #4b72c7;
+  --ip-bg: rgba(185, 161, 115, 0.6);
 }
 
 /* semantic color variables for this project */
@@ -63,7 +63,11 @@
   --color-surface: #121212;
   --color-surface-alt: #1d1d1d;
 
-  --ip-bg: rgba(214, 92, 16, 0.45);
+  --ip-primary: #f9d79a;
+  --ip-secondary: #f2a365;
+  --ip-warn: #c2d45d;
+  --ip-info: #3560bd;
+  --ip-bg: rgba(185, 161, 115, 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -81,7 +85,11 @@
     --color-surface: #121212;
     --color-surface-alt: #1d1d1d;
 
-    --ip-bg: rgba(214, 92, 16, 0.45);
+    --ip-primary: #f9d79a;
+    --ip-secondary: #f2a365;
+    --ip-warn: #c2d45d;
+    --ip-info: #3560bd;
+    --ip-bg: rgba(185, 161, 115, 0.6);
   }
 }
 
@@ -179,7 +187,9 @@ body {
   color: var(--color-muted) !important;
 }
 
-a, input, button {
+a,
+input,
+button {
   cursor: pointer;
 }
 

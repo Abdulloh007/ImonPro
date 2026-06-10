@@ -157,7 +157,7 @@ main.ip-main
                     .ip-t__data.ip-dfw(v-for="room in project.places?.title") {{room?.title}} 
                 .ip-t__row(v-for="(rooms, idx) in project.places?.room")
                     .ip-t__data.ip-dfw {{ project.float_count - idx}}
-                    RouterLink.ip-t__data.room.ip-dfw(v-for="item in rooms" :to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + item.id" :class="{reserved: item.reserved, broned: item.broned}") 
+                    RouterLink.ip-t__data.room.ip-dfw(v-for="item in rooms" :to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + item.id" :class="{reserved: item.reserved, broned: item.broned, dweller: item.dweller}") 
                         span {{ item.room_number }} кв
                         span(v-if="item.broned && role.degree < 3") {{ item.client.split(' ')[0] }} {{ item.client.split(' ').length > 1 ? item.client.split(' ')[1].slice(0, 1) : ''}}. {{ item.client.split(' ').length > 2 ? item.client.split(' ')[2].slice(0, 1) : '' }}.
                         //- span
@@ -175,7 +175,7 @@ main.ip-main
             .ip-table(v-if="project && shopsViewMode === 'grid'")
                 .ip-t__row(v-for="(shops, idx) in project.places?.store")
                         .ip-t__data {{ project.magazine_count - idx }} этаж
-                        RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + shop.id" :class="{reserved: shop.reserved, broned: shop.broned}" v-for="shop in shops") 
+                        RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + shop.id" :class="{reserved: shop.reserved, broned: shop.broned, dweller: shop.dweller}" v-for="shop in shops") 
                             span {{ shop.room_number }} {{ project.block}}
                             span(v-if="shop.broned && role.degree < 3") {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[0] : ''}} {{ shop.client.split(' ').length > 1 ? shop.client.split(' ')[1].slice(0, 1) : ''}}. {{ shop.client.split(' ').length > 2 ? shop.client.split(' ')[2].slice(0, 1) : '' }}.
                 .ip-t__row(v-if="!project.places?.store || project.places?.store.length === 0")
@@ -205,7 +205,7 @@ main.ip-main
                     b Подвал
             .ip-table(v-if="project")
                 .ip-t__row(v-for="(underground, idx) in project.places?.underground")
-                    RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + underground.id" :class="{reserved: underground.reserved, broned: underground.broned}") 
+                    RouterLink.ip-t__data.ip-w-full.room.ip-dfw(:to="'/project/' + route.params.id + '/block/' + route.params.block + '/room/' + underground.id" :class="{reserved: underground.reserved, broned: underground.broned, dweller: underground.dweller}") 
                         span {{ underground.float }} этаж
                         span(v-if="underground.broned && role.degree < 3") {{ underground.client.split(' ')[0] }} {{ underground.client.split(' ').length > 1 ? underground.client.split(' ')[1].slice(0, 1) : ''}}. {{ underground.client.split(' ').length > 2 ? underground.client.split(' ')[2].slice(0, 1) : '' }}.
                         //- span
@@ -293,10 +293,8 @@ main.ip-main
 .ip-table {
     display: flex;
     flex-direction: column;
-    overflow: overlay;
     max-width: 100%;
-    max-height: 90vh;
-    margin-bottom: 10vh;
+    margin-bottom: 60px;
 
     .ip-t__row {
         position: relative;
@@ -307,7 +305,7 @@ main.ip-main
 
         &.ip-head {
             position: sticky;
-            top: 0;
+            top: 50px;
             z-index: 10;
             box-shadow: 0 1px 6px -3px var(--color-border);
         }
@@ -316,6 +314,7 @@ main.ip-main
             line-break: anywhere;
             background-color: var(--color-surface-alt);
             color: var(--color-text);
+            border-radius: 10px;
         }
 
         .ip-t__data {
@@ -334,6 +333,11 @@ main.ip-main
 
             &.broned {
                 background-color: #cc6140;
+                color: #fff;
+            }
+
+            &.dweller {
+                background-color: #3560bd;
                 color: #fff;
             }
 
