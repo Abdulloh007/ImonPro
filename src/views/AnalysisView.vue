@@ -2,7 +2,7 @@
 import { useIndexStore } from '@/stores'
 import { UseLoaderStore } from '@/stores/loader'
 import { useToasterStore } from '@/stores/toaster'
-import axios from 'axios'
+import axios from '@/lib/httpClient'
 import { computed, onMounted, ref } from 'vue'
 import { Bar, Doughnut, Line } from 'vue-chartjs'
 import {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { Shop, ShopCoordinates } from '@/models/shop'
-import axios from 'axios'
+import axios from '@/lib/httpClient'
 import { useIndexStore } from '@/stores'
 import { useToasterStore } from '@/stores/toaster'
 

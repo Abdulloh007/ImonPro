@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import ProjectList from '../components/ProjectList.vue'
-import axios from 'axios';
+import axios from '@/lib/httpClient';
 import { useIndexStore } from '@/stores';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
@@ -42,8 +42,26 @@ onMounted(() => {
 function addServer() {
     loaderStore.isActive = true
     newServer.value.token = indexStore.UTF8TextToBase64(newServer.value.login + ':' + newServer.value.password)
-    indexStore.newServer(newServer.value)
-    location.reload()
+    axios.get(newServer.value.link + '/api/auth', {
+        headers: {
+            'Authorization': 'Basic ' + newServer.value.token
+        }
+    }).then(res => {
+        const serverWithRole = {
+            ...newServer.value,
+            role: res.data.role
+        }
+
+        indexStore.newServer(serverWithRole)
+        indexStore.setAPIHref(serverWithRole)
+        location.reload()
+    })
+    .catch(err => toasterStore.add({
+        title: err.code,
+        descr: err.message,
+        type: 'danger'
+    }))
+    .finally(() => loaderStore.isActive = false)
 }
 
 </script>

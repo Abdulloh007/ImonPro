@@ -2,12 +2,47 @@
   "name": "imonpro",
   "version": "0.0.0",
   "private": true,
+  "main": "electron/main.cjs",
   "scripts": {
     "build": "run-p type-check \"build-only {@}\" --",
     "build-only": "vite build",
     "dev": "vite",
+    "electron:dev": "node scripts/electron-dev.cjs",
+    "electron:build": "npm run build && node scripts/electron-build.cjs",
+    "electron:start": "npm run build && electron .",
     "preview": "vite preview",
     "type-check": "vue-tsc --build"
+  },
+  "build": {
+    "appId": "pro.imon.desktop",
+    "productName": "Imon PRO",
+    "directories": {
+      "buildResources": "assets",
+      "output": "release-electron-rolefix"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "assets/icon.png",
+      "assets/icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "differentialPackage": false
+    }
   },
   "dependencies": {
     "@capacitor/android": "^6.2.0",
@@ -36,7 +71,10 @@
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "@vue/cli-plugin-pwa": "~5.0.0",
     "@vue/tsconfig": "^0.7.0",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.15.2",
     "npm-run-all2": "^7.0.1",
+    "png-to-ico": "^3.0.1",
     "sass": "^1.82.0",
     "sass-loader": "^16.0.4",
     "typescript": "~5.6.3",
@@ -47,3 +85,4 @@
   },
   "type": "module"
 }
+

@@ -2,7 +2,7 @@
 import { useIndexStore } from '@/stores';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
-import axios from 'axios';
+import axios from '@/lib/httpClient';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { Capacitor } from '@capacitor/core';

@@ -3,4 +3,5 @@ export interface Server {
     login: string;
     password: string;
     token: string
+    role?: unknown
 }

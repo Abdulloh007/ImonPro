@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
 import { useIndexStore } from '@/stores';
-import axios from 'axios';
+import axios from '@/lib/httpClient';
 
 const servers = ref<any>([])
 const route = useRoute()

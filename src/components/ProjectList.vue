@@ -20,7 +20,6 @@ const { list } = defineProps<Props>()
 
 function setServer(project: any) {
     indexStore.setAPIHref(project.server)
-    localStorage.setItem('ip_role', JSON.stringify(project.role))
     router.push('/project/' + project.id)
 }
 

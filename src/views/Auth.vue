@@ -2,7 +2,7 @@
 import { useIndexStore } from '@/stores';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';
-import axios from 'axios';
+import axios from '@/lib/httpClient';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -25,7 +25,7 @@ function auth() {
     }).then(res => {
         localStorage.setItem('ip_server', server.value)
         localStorage.setItem('ip_token', indexStore.UTF8TextToBase64(login.value + ':' + password.value))
-        localStorage.setItem('ip_role', JSON.stringify(res.data.role))
+        indexStore.setRole(res.data.role)
         router.push('/')
             .then(() => location.reload())
     })

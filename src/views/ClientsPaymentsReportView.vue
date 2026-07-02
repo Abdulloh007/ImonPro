@@ -2,7 +2,7 @@
 import { useIndexStore } from '@/stores'
 import { UseLoaderStore } from '@/stores/loader'
 import { useToasterStore } from '@/stores/toaster'
-import axios from 'axios'
+import axios from '@/lib/httpClient'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import type { Header } from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'

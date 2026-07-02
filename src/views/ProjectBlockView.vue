@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { onMounted } from 'vue';
-import axios from 'axios';
+import axios from '@/lib/httpClient';
 import { useRoute, useRouter } from 'vue-router';
 import { UseLoaderStore } from '@/stores/loader';
 import { useToasterStore } from '@/stores/toaster';

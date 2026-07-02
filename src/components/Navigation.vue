@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useIndexStore } from '@/stores';
 
 defineProps<{
     collapsed: boolean
     theme: 'light' | 'dark'
 }>()
 
-const role = ref<any>({
-    degree: 999,
-    name: ''
-})
-role.value = JSON.parse(localStorage.getItem('ip_role') || '{"name":"","degree":999}')
+const indexStore = useIndexStore()
+const { role } = storeToRefs(indexStore)
 
 const emit = defineEmits<{
     (e: 'toggle-sidebar'): void
