@@ -29,6 +29,9 @@ const dragStartPositions = ref<Map<number, { x: number; y: number }>>(new Map())
 const undoStack = ref<any[]>([])
 const redoStack = ref<any[]>([])
 const MAX_HISTORY = 100
+const parkingPlanSrc = import.meta.env.DEV
+    ? '/img/parking-plan.png'
+    : new URL('img/parking-plan.png', window.location.href).href
 
 const role = ref<any>({
     degree: 999,
@@ -462,7 +465,7 @@ main.ip-main
                     @click="handleOutletClick"
                     @contextmenu.prevent
                 )
-                    img(:src="'/img/parking-plan.png'").parking-plan-bg
+                    img(:src="parkingPlanSrc").parking-plan-bg
                     .parking-placeholder(v-if="parkings.length === 0") Нет парковок для отображения
                     .parking(
                         v-for="parking in getParkingsBySelectedLevel()" 

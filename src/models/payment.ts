@@ -1,6 +1,7 @@
 export interface Payment {
-    id: number;
+    id: number | string;
     date: string;
     sum: number;
     method?: string;
+    comment?: string;
 }

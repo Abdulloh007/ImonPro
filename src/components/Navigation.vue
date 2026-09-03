@@ -239,4 +239,16 @@ section.ip-navigation
         }
     }
 }
+
+@media print {
+    .ip-navigation {
+        display: none !important;
+    }
+
+    .ip-layout {
+        padding: 0 !important;
+    }
+
+
+}
 </style>

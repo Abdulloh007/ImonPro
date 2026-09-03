@@ -111,6 +111,36 @@ function serializeElectronData(data: unknown, headers: Record<string, string>) {
   return JSON.stringify(data)
 }
 
+function sanitizeHeaders(headers: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(headers).map(([key, value]) => [
+      key,
+      key.toLowerCase() === 'authorization' ? '[masked]' : value
+    ])
+  )
+}
+
+function logElectronRequestError(payload: {
+  url: string
+  method?: string
+  headers: Record<string, string>
+  data?: unknown
+  response?: ElectronHttpResponse | AxiosResponse
+  error?: unknown
+}) {
+  console.error('[Electron HTTP] Request failed', {
+    url: payload.url,
+    method: payload.method || 'GET',
+    headers: sanitizeHeaders(payload.headers),
+    requestData: payload.data,
+    status: payload.response?.status,
+    statusText: payload.response?.statusText,
+    responseHeaders: payload.response?.headers,
+    responseData: payload.response?.data,
+    error: payload.error
+  })
+}
+
 async function request<T = any>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
   if (!window.electronHttp) {
     return axios.request<T>(config)
@@ -119,14 +149,27 @@ async function request<T = any>(config: AxiosRequestConfig): Promise<AxiosRespon
   const url = axios.getUri(config)
   const headers = normalizeHeaders(config.headers)
   const requestData = serializeElectronData(config.data, headers)
-  const response = await window.electronHttp.request<T>({
-    url,
-    method: config.method,
-    headers,
-    data: requestData,
-    responseType: config.responseType,
-    timeout: config.timeout
-  })
+  let response: ElectronHttpResponse<T>
+
+  try {
+    response = await window.electronHttp.request<T>({
+      url,
+      method: config.method,
+      headers,
+      data: requestData,
+      responseType: config.responseType,
+      timeout: config.timeout
+    })
+  } catch (error) {
+    logElectronRequestError({
+      url,
+      method: config.method,
+      headers,
+      data: requestData,
+      error
+    })
+    throw error
+  }
 
   const data = response.data && typeof response.data === 'object' && '__electronBinary' in response.data
     ? config.responseType === 'arraybuffer'
@@ -144,11 +187,20 @@ async function request<T = any>(config: AxiosRequestConfig): Promise<AxiosRespon
   } as AxiosResponse<T>
 
   if (!response.ok) {
-    throw Object.assign(new Error(`Request failed with status code ${response.status}`), {
+    const error = Object.assign(new Error(`Request failed with status code ${response.status}`), {
       response: axiosResponse,
       config,
       request: null
     })
+    logElectronRequestError({
+      url,
+      method: config.method,
+      headers,
+      data: requestData,
+      response: axiosResponse,
+      error
+    })
+    throw error
   }
 
   return axiosResponse

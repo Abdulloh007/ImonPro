@@ -8,6 +8,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: './',
+  assetsInclude: ['**/*.docx'],
   plugins: [
     vue(),
     vueJsx(),

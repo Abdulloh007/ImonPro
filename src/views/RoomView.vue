@@ -464,6 +464,38 @@ function createPayment(payload?: { sum?: number; currency?: any; base?: string; 
         .finally(() => loaderStore.isActive = false)
 }
 
+function updatePlanComment(payload: { id?: number | string; date: string; comment: string }) {
+    loaderStore.isActive = true
+    axios.post(indexStore.apiHref + '/api/payment-plan', {
+        id: payload.id,
+        date: payload.date,
+        comment: payload.comment
+    }, {
+        headers: {
+            'Authorization': 'Basic ' + indexStore.token
+        }
+    })
+        .then(() => {
+            payments_plan.value = payments_plan.value.map(plan => (
+                (payload.id ? String(plan.id || '') === String(payload.id) : plan.date === payload.date)
+                    ? { ...plan, comment: payload.comment }
+                    : plan
+            ))
+            toasterStore.add({
+                title: 'Успех',
+                descr: 'Комментарий сохранен',
+                type: 'success'
+            })
+            getPaymentsPlan()
+        })
+        .catch(err => toasterStore.add({
+            title: err?.code || 'Ошибка',
+            descr: err?.message || 'Не удалось сохранить комментарий',
+            type: 'danger'
+        }))
+        .finally(() => loaderStore.isActive = false)
+}
+
 function getCurrencySymboll() {
     return currencies.value.find(item => item.code === room.value.currency_code)?.symbol
 }
@@ -546,7 +578,7 @@ main.ip-main
 
             // Payments tab
             .tab-content(v-if="activeTab === 'payments'")
-                PaymentSchedule(:plannedPayments="payments_plan" :actualPayments="actual_payments" :currencySymbol="getCurrencySymboll()" :currencies="currencies" @create-payment="createPayment" @refresh="getPaymentsPlan")
+                PaymentSchedule(:plannedPayments="payments_plan" :actualPayments="actual_payments" :currencySymbol="getCurrencySymboll()" :currencies="currencies" @create-payment="createPayment" @refresh="getPaymentsPlan" @update-plan-comment="updatePlanComment")
 
     .ip-modal(:class="isModalOpen")
         form.ip-modal__container(@submit.prevent="createOrder()" :ref="form")
@@ -711,13 +743,19 @@ main.ip-main
 }
 
 @media print {
-    .header {
-        display: none;
+    .header, .ip-navigation, .ip-room-tabs {
+        display: none !important;
+    }
+
+    .ip-layout {
+        padding: 0 !important;
     }
 
     body {
         width: 1200px;
     }
+
+
 }
 
 @media (max-width: 576px) {
