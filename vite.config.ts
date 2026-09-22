@@ -44,7 +44,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://10.158.190.10:8012/Panorama/hs',
+        target: 'http://100.118.133.65/Panorama/hs',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, '')
       }

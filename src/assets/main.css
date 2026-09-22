@@ -713,3 +713,19 @@ a {
   }
 
 }
+
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  html,
+  body,
+  #app {
+    width: 100%;
+    min-height: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000 !important;
+  }
+}

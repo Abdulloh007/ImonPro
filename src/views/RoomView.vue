@@ -104,7 +104,7 @@ onMounted(() => {
                 counterparty.value = room.value.client
 
                 sms_form.value.phone = counterparty.value.phone || ''
-                sms_form.value.message = `Уважаемый(ая) ${counterparty.value.full_name}, Ваш заказ на квартиру ${room.value.name} в проекте ${room.value.project} успешно оформлен. С уважением, Toj Fayz.`
+                sms_form.value.message = `Уважаемый(ая) ${counterparty.value.full_name}, Ваш заказ на квартиру ${room.value.name} в проекте ${room.value.project} успешно оформлен. С уважением, Imon Group.`
 
                 getPaymentsPlan()
                 getSMSTemplates()
@@ -743,6 +743,23 @@ main.ip-main
 }
 
 @media print {
+    #app,
+    .ip-main,
+    .ip-room .ip-container,
+    .ip-room .ip-row {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .ip-room {
+        padding: 0 18px !important;
+        color: #000 !important;
+    }
+
+    .ip-room * {
+        color: #000 !important;
+    }
+
     .header, .ip-navigation, .ip-room-tabs {
         display: none !important;
     }
@@ -751,11 +768,21 @@ main.ip-main
         padding: 0 !important;
     }
 
-    body {
-        width: 1200px;
+    .ip-room__plan {
+        page-break-inside: avoid;
     }
 
+    .ip-room__plan h4 {
+        margin-bottom: 8px;
+    }
 
+    .ip-room__plan img {
+        width: 100%;
+        height: calc(50vh - 72px);
+        max-height: calc(100vh - 72px);
+        object-fit: contain;
+        display: block;
+    }
 }
 
 @media (max-width: 576px) {
